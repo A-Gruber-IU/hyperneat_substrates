@@ -1,0 +1,192 @@
+initializing
+initializing finished
+start compile
+compile finished, cost time: 23.172271s
+Generation: 1, Cost time: 5080.97ms
+ 	fitness: valid cnt: 1000, max: 1001.8320, min: -3001.5964, mean: -1367.6503, std: 832.0840
+
+	node counts: max: 12, min: 10, mean: 11.26
+ 	conn counts: max: 20, min: 8, mean: 17.24
+ 	species: 10, [726, 47, 1, 12, 3, 51, 7, 6, 20, 127]
+
+Generation: 2, Cost time: 5062.35ms
+ 	fitness: valid cnt: 1000, max: 1001.4822, min: -3059.3977, mean: -1151.0968, std: 929.5667
+
+	node counts: max: 13, min: 9, mean: 11.37
+ 	conn counts: max: 22, min: 0, mean: 15.33
+ 	species: 10, [362, 92, 19, 81, 56, 63, 38, 23, 10, 256]
+
+Generation: 3, Cost time: 5140.62ms
+ 	fitness: valid cnt: 1000, max: 1005.7136, min: -2998.8604, mean: -665.8101, std: 1090.1772
+
+	node counts: max: 14, min: 9, mean: 11.27
+ 	conn counts: max: 22, min: 0, mean: 13.27
+ 	species: 10, [102, 56, 44, 86, 50, 137, 17, 35, 37, 436]
+
+Generation: 4, Cost time: 5191.20ms
+ 	fitness: valid cnt: 1000, max: 1004.6826, min: -2999.6355, mean: -147.6751, std: 1070.7173
+
+	node counts: max: 14, min: 9, mean: 11.23
+ 	conn counts: max: 22, min: 0, mean: 11.88
+ 	species: 10, [127, 29, 44, 62, 46, 36, 143, 63, 30, 420]
+
+Generation: 5, Cost time: 5195.32ms
+ 	fitness: valid cnt: 1000, max: 1004.3805, min: -2998.0095, mean: 53.4903, std: 1033.4536
+
+	node counts: max: 15, min: 9, mean: 11.40
+ 	conn counts: max: 24, min: 0, mean: 11.59
+ 	species: 10, [1, 105, 69, 55, 52, 29, 24, 57, 19, 589]
+
+Generation: 6, Cost time: 5320.55ms
+ 	fitness: valid cnt: 1000, max: 1004.4559, min: -2999.3071, mean: 133.2369, std: 1012.6783
+
+	node counts: max: 15, min: 9, mean: 11.55
+ 	conn counts: max: 24, min: 0, mean: 12.25
+ 	species: 10, [14, 96, 85, 42, 49, 22, 74, 46, 35, 537]
+
+Generation: 7, Cost time: 5387.41ms
+ 	fitness: valid cnt: 1000, max: 1004.0835, min: -2997.7234, mean: 202.9729, std: 948.7901
+
+	node counts: max: 16, min: 9, mean: 11.60
+ 	conn counts: max: 25, min: 0, mean: 11.46
+ 	species: 10, [17, 51, 37, 59, 64, 67, 34, 33, 30, 608]
+
+Generation: 8, Cost time: 5187.26ms
+ 	fitness: valid cnt: 1000, max: 1005.4478, min: -2998.4822, mean: 243.4267, std: 935.6718
+
+	node counts: max: 16, min: 9, mean: 11.60
+ 	conn counts: max: 25, min: 0, mean: 11.58
+ 	species: 10, [64, 22, 23, 88, 61, 29, 13, 26, 33, 641]
+
+Generation: 9, Cost time: 5004.46ms
+ 	fitness: valid cnt: 1000, max: 1004.3649, min: -2997.5188, mean: 311.0687, std: 892.6918
+
+	node counts: max: 16, min: 9, mean: 11.77
+ 	conn counts: max: 25, min: 0, mean: 12.35
+ 	species: 10, [7, 50, 95, 85, 44, 47, 32, 43, 22, 575]
+
+Generation: 10, Cost time: 5039.40ms
+ 	fitness: valid cnt: 1000, max: 1004.5678, min: -2998.2539, mean: 164.7626, std: 1005.8718
+
+	node counts: max: 16, min: 9, mean: 11.99
+ 	conn counts: max: 26, min: 0, mean: 12.96
+ 	species: 10, [56, 76, 112, 67, 19, 1, 47, 46, 26, 550]
+
+Generation: 11, Cost time: 5004.07ms
+ 	fitness: valid cnt: 1000, max: 1006.8154, min: -2999.0974, mean: 223.2262, std: 955.9968
+
+	node counts: max: 16, min: 9, mean: 12.20
+ 	conn counts: max: 25, min: 0, mean: 13.01
+ 	species: 10, [17, 124, 96, 54, 35, 41, 35, 35, 41, 522]
+
+Generation: 12, Cost time: 5317.08ms
+ 	fitness: valid cnt: 1000, max: 1004.2502, min: -3072.9768, mean: 209.6462, std: 975.3334
+
+	node counts: max: 17, min: 9, mean: 12.38
+ 	conn counts: max: 26, min: 0, mean: 13.09
+ 	species: 10, [9, 112, 99, 54, 92, 42, 42, 26, 10, 514]
+
+Generation: 13, Cost time: 5031.22ms
+ 	fitness: valid cnt: 1000, max: 1004.6850, min: -2998.0703, mean: 234.2770, std: 961.0129
+
+	node counts: max: 17, min: 9, mean: 12.66
+ 	conn counts: max: 27, min: 0, mean: 14.13
+ 	species: 10, [114, 49, 114, 7, 68, 49, 32, 27, 25, 515]
+
+Generation: 14, Cost time: 5287.35ms
+ 	fitness: valid cnt: 1000, max: 1004.7360, min: -2997.1030, mean: 282.2352, std: 899.0175
+
+	node counts: max: 18, min: 9, mean: 12.63
+ 	conn counts: max: 27, min: 0, mean: 13.48
+ 	species: 10, [87, 71, 15, 86, 51, 42, 40, 49, 32, 527]
+
+Generation: 15, Cost time: 5041.23ms
+ 	fitness: valid cnt: 1000, max: 1005.1097, min: -3009.7839, mean: 237.5108, std: 946.1880
+
+	node counts: max: 17, min: 9, mean: 12.87
+ 	conn counts: max: 27, min: 0, mean: 13.80
+ 	species: 10, [14, 51, 57, 81, 74, 76, 36, 38, 7, 566]
+
+Generation: 16, Cost time: 5030.07ms
+ 	fitness: valid cnt: 1000, max: 1005.8460, min: -3027.4753, mean: 291.5443, std: 936.1918
+
+	node counts: max: 18, min: 9, mean: 13.11
+ 	conn counts: max: 28, min: 0, mean: 14.76
+ 	species: 10, [8, 71, 88, 3, 60, 61, 67, 42, 25, 575]
+
+Generation: 17, Cost time: 5209.02ms
+ 	fitness: valid cnt: 1000, max: 1004.2360, min: -3000.4226, mean: 254.9326, std: 946.2786
+
+	node counts: max: 18, min: 9, mean: 13.08
+ 	conn counts: max: 29, min: 0, mean: 14.45
+ 	species: 10, [9, 22, 95, 69, 54, 45, 76, 2, 30, 598]
+
+Generation: 18, Cost time: 5463.67ms
+ 	fitness: valid cnt: 1000, max: 1004.8844, min: -3004.2478, mean: 254.1790, std: 955.5883
+
+	node counts: max: 17, min: 9, mean: 13.37
+ 	conn counts: max: 29, min: 0, mean: 15.06
+ 	species: 10, [52, 15, 81, 75, 54, 79, 28, 28, 50, 538]
+
+Generation: 19, Cost time: 5209.00ms
+ 	fitness: valid cnt: 1000, max: 1003.8270, min: -3000.2712, mean: 291.5654, std: 919.9108
+
+	node counts: max: 18, min: 9, mean: 13.32
+ 	conn counts: max: 29, min: 0, mean: 14.87
+ 	species: 10, [6, 74, 89, 78, 84, 72, 39, 35, 23, 500]
+
+Generation: 20, Cost time: 5366.12ms
+ 	fitness: valid cnt: 1000, max: 1004.1688, min: -3000.0632, mean: 270.2260, std: 953.3333
+
+	node counts: max: 18, min: 9, mean: 13.55
+ 	conn counts: max: 29, min: 0, mean: 15.13
+ 	species: 10, [25, 101, 11, 85, 119, 61, 35, 16, 9, 538]
+
+Generation: 21, Cost time: 5206.27ms
+ 	fitness: valid cnt: 1000, max: 1004.7053, min: -2999.2703, mean: 303.7378, std: 917.7972
+
+	node counts: max: 19, min: 9, mean: 13.89
+ 	conn counts: max: 30, min: 0, mean: 15.96
+ 	species: 10, [76, 82, 5, 91, 23, 58, 42, 31, 22, 570]
+
+Generation: 22, Cost time: 5465.23ms
+ 	fitness: valid cnt: 1000, max: 1005.0370, min: -2998.6335, mean: 288.7923, std: 924.6406
+
+	node counts: max: 18, min: 9, mean: 14.23
+ 	conn counts: max: 31, min: 1, mean: 16.11
+ 	species: 10, [8, 71, 80, 87, 65, 49, 50, 56, 24, 510]
+
+Generation: 23, Cost time: 5215.91ms
+ 	fitness: valid cnt: 1000, max: 1004.8449, min: -2998.7422, mean: 269.9098, std: 905.4929
+
+	node counts: max: 19, min: 9, mean: 14.64
+ 	conn counts: max: 30, min: 0, mean: 16.93
+ 	species: 10, [127, 13, 88, 46, 65, 67, 45, 9, 42, 498]
+
+Generation: 24, Cost time: 5230.34ms
+ 	fitness: valid cnt: 1000, max: 1004.6684, min: -2998.2415, mean: 244.3749, std: 924.1499
+
+	node counts: max: 20, min: 9, mean: 14.89
+ 	conn counts: max: 31, min: 0, mean: 17.06
+ 	species: 10, [4, 81, 52, 122, 67, 60, 48, 39, 24, 503]
+
+Generation: 25, Cost time: 5242.31ms
+ 	fitness: valid cnt: 1000, max: 1003.9565, min: -2997.4409, mean: 258.2408, std: 910.5883
+
+	node counts: max: 20, min: 9, mean: 15.41
+ 	conn counts: max: 32, min: 1, mean: 17.79
+ 	species: 10, [5, 139, 78, 74, 54, 58, 45, 39, 36, 472]
+
+Generation: 26, Cost time: 5449.96ms
+ 	fitness: valid cnt: 1000, max: 1005.2512, min: -3001.8181, mean: 211.6991, std: 975.2350
+
+	node counts: max: 21, min: 9, mean: 15.64
+ 	conn counts: max: 32, min: 1, mean: 18.39
+ 	species: 10, [67, 7, 56, 119, 44, 48, 56, 35, 20, 548]
+
+Generation: 27, Cost time: 5226.52ms
+ 	fitness: valid cnt: 1000, max: 1003.9821, min: -3002.1021, mean: 255.9502, std: 940.9290
+
+	node counts: max: 21, min: 10, mean: 16.05
+ 	conn counts: max: 32, min: 1, mean: 18.79
+ 	species: 10, [28, 119, 88, 96, 64, 30, 16, 30, 39, 490]
