@@ -27,3 +27,13 @@ config: {'_wandb': {}}
 2025-09-02 09:17:42,229 INFO    MainThread:111790 [wandb_init.py:_post_run_cell_hook():592] [no run ID] resuming backend
 2025-09-02 09:17:42,232 INFO    MainThread:111790 [jupyter.py:save_ipynb():404] [no run ID] not saving jupyter notebook
 2025-09-02 09:17:42,232 INFO    MainThread:111790 [wandb_init.py:_pre_run_cell_hook():581] [no run ID] pausing backend
+2025-09-02 09:22:26,604 INFO    MainThread:111790 [wandb_run.py:_finish():2260] finishing run wirkelzirkel-iu/connection_cost/tfsxw9tj
+2025-09-02 09:22:26,896 INFO    MainThread:111790 [jupyter.py:save_history():480] not saving jupyter history
+2025-09-02 09:22:26,896 INFO    MainThread:111790 [jupyter.py:save_ipynb():404] not saving jupyter notebook
+2025-09-02 09:22:26,896 INFO    MainThread:111790 [wandb_init.py:_jupyter_teardown():607] cleaning up jupyter logic
+2025-09-02 09:22:26,896 INFO    MainThread:111790 [wandb_run.py:_atexit_cleanup():2459] got exitcode: 0
+2025-09-02 09:22:26,896 INFO    MainThread:111790 [wandb_run.py:_restore():2441] restore
+2025-09-02 09:22:26,896 INFO    MainThread:111790 [wandb_run.py:_restore():2447] restore done
+2025-09-02 09:22:28,164 INFO    MainThread:111790 [wandb_run.py:_footer_history_summary_info():3895] rendering history
+2025-09-02 09:22:28,164 INFO    MainThread:111790 [wandb_run.py:_footer_history_summary_info():3927] rendering summary
+2025-09-02 09:22:28,165 INFO    MainThread:111790 [wandb_run.py:_footer_sync_info():3856] logging synced files
