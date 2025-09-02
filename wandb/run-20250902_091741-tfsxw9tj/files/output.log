@@ -190,3 +190,101 @@ Generation: 27, Cost time: 5226.52ms
 	node counts: max: 21, min: 10, mean: 16.05
  	conn counts: max: 32, min: 1, mean: 18.79
  	species: 10, [28, 119, 88, 96, 64, 30, 16, 30, 39, 490]
+
+Generation: 28, Cost time: 5452.28ms
+ 	fitness: valid cnt: 1000, max: 1004.9866, min: -2999.7151, mean: 293.2570, std: 934.3119
+
+	node counts: max: 21, min: 10, mean: 16.09
+ 	conn counts: max: 33, min: 1, mean: 18.85
+ 	species: 10, [118, 5, 102, 78, 53, 85, 27, 23, 54, 455]
+
+Generation: 29, Cost time: 5249.30ms
+ 	fitness: valid cnt: 1000, max: 1005.0410, min: -3000.8333, mean: 254.3832, std: 927.6470
+
+	node counts: max: 22, min: 10, mean: 16.24
+ 	conn counts: max: 34, min: 1, mean: 18.70
+ 	species: 10, [8, 113, 86, 64, 37, 56, 78, 24, 60, 474]
+
+Generation: 30, Cost time: 5222.76ms
+ 	fitness: valid cnt: 1000, max: 1005.2031, min: -2999.6958, mean: 238.1848, std: 954.4847
+
+	node counts: max: 21, min: 10, mean: 16.45
+ 	conn counts: max: 35, min: 1, mean: 18.89
+ 	species: 10, [137, 52, 100, 6, 85, 70, 54, 14, 22, 460]
+
+Generation: 31, Cost time: 5214.36ms
+ 	fitness: valid cnt: 1000, max: 1003.2524, min: -3105.9146, mean: 260.1876, std: 929.4444
+
+	node counts: max: 22, min: 11, mean: 16.71
+ 	conn counts: max: 36, min: 2, mean: 18.83
+ 	species: 10, [7, 111, 101, 117, 78, 34, 37, 16, 23, 476]
+
+Generation: 32, Cost time: 5424.14ms
+ 	fitness: valid cnt: 1000, max: 1005.4069, min: -3008.5642, mean: 264.8954, std: 931.9578
+
+	node counts: max: 23, min: 11, mean: 17.11
+ 	conn counts: max: 37, min: 2, mean: 19.31
+ 	species: 10, [14, 93, 106, 42, 108, 71, 35, 37, 14, 480]
+
+Generation: 33, Cost time: 5216.99ms
+ 	fitness: valid cnt: 1000, max: 1004.9555, min: -2998.6484, mean: 316.5346, std: 910.5364
+
+	node counts: max: 24, min: 11, mean: 17.44
+ 	conn counts: max: 37, min: 2, mean: 20.05
+ 	species: 10, [128, 96, 9, 88, 48, 58, 63, 35, 24, 451]
+
+Generation: 34, Cost time: 5369.30ms
+ 	fitness: valid cnt: 1000, max: 1003.5256, min: -2998.2368, mean: 351.0711, std: 876.7651
+
+	node counts: max: 24, min: 10, mean: 17.98
+ 	conn counts: max: 38, min: 2, mean: 21.60
+ 	species: 10, [166, 117, 1, 59, 85, 4, 39, 25, 15, 489]
+
+Generation: 35, Cost time: 5133.53ms
+ 	fitness: valid cnt: 1000, max: 1004.3092, min: -2999.5112, mean: 414.4521, std: 762.0722
+
+	node counts: max: 25, min: 12, mean: 18.39
+ 	conn counts: max: 38, min: 5, mean: 21.94
+ 	species: 10, [118, 20, 54, 109, 48, 44, 37, 39, 20, 511]
+
+Generation: 36, Cost time: 5157.68ms
+ 	fitness: valid cnt: 1000, max: 1005.3301, min: -2999.8049, mean: 381.8872, std: 853.2342
+
+	node counts: max: 24, min: 12, mean: 18.66
+ 	conn counts: max: 40, min: 5, mean: 22.29
+ 	species: 10, [13, 51, 72, 26, 76, 45, 47, 40, 29, 601]
+
+Generation: 37, Cost time: 5005.66ms
+ 	fitness: valid cnt: 1000, max: 1004.0766, min: -3000.1201, mean: 393.8661, std: 815.9321
+
+	node counts: max: 24, min: 12, mean: 18.85
+ 	conn counts: max: 41, min: 4, mean: 22.03
+ 	species: 10, [99, 101, 16, 99, 58, 60, 43, 44, 22, 458]
+
+Generation: 38, Cost time: 5231.81ms
+ 	fitness: valid cnt: 1000, max: 1005.1722, min: -2997.3240, mean: 436.1515, std: 757.5605
+
+	node counts: max: 25, min: 12, mean: 18.62
+ 	conn counts: max: 41, min: 6, mean: 21.52
+ 	species: 10, [140, 6, 91, 87, 54, 52, 80, 44, 26, 420]
+
+Generation: 39, Cost time: 5099.83ms
+ 	fitness: valid cnt: 1000, max: 1004.8099, min: -2997.0085, mean: 433.5130, std: 767.3554
+
+	node counts: max: 25, min: 11, mean: 18.71
+ 	conn counts: max: 37, min: 4, mean: 21.09
+ 	species: 10, [128, 2, 105, 130, 41, 76, 67, 39, 37, 375]
+
+Generation: 40, Cost time: 5255.55ms
+ 	fitness: valid cnt: 1000, max: 1005.4025, min: -2999.2683, mean: 441.4922, std: 748.5170
+
+	node counts: max: 25, min: 11, mean: 19.13
+ 	conn counts: max: 36, min: 4, mean: 22.95
+ 	species: 10, [98, 121, 11, 84, 46, 75, 48, 33, 9, 475]
+
+Generation: 41, Cost time: 5044.49ms
+ 	fitness: valid cnt: 1000, max: 1004.5211, min: -2996.4158, mean: 447.9495, std: 784.1614
+
+	node counts: max: 25, min: 12, mean: 19.03
+ 	conn counts: max: 37, min: 5, mean: 22.34
+ 	species: 10, [31, 87, 56, 69, 66, 87, 84, 45, 7, 468]
