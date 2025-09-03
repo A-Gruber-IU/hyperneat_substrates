@@ -97,6 +97,8 @@ class ManualInputMapper:
         if not self.dim_mapping:
             print(f"Warning: No input mapping for '{self.env_name}'. Using a generic one.")
             self.dim_mapping = {0: [(1.0, list(range(self.obs_size)))]}
+        else:
+            print(f"Using user-defined input and output mapping for '{self.env_name}'.")
 
         # Calculate coordinate dimensions
         self.base_feature_width = max(self.dim_mapping.keys()) + 1
@@ -127,7 +129,6 @@ class ManualInputMapper:
         # Try to get the specific output mapping first
         output_coords = self.mapping.get("output")
         if output_coords:
-            print(f"Using user-defined output mapping for '{self.env_name}'.")
             # Validate that the user-defined coordinates have the correct width
             for i, c in enumerate(output_coords):
                 if len(c) != coord_size:

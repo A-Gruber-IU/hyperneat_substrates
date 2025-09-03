@@ -70,6 +70,8 @@ class PCAanalyzer:
 
         # 6. Convert to list of tuples for compatibility
         input_coors_list = [tuple(row) for row in input_coors_full]
+        input_coors_list.append(tuple([0.0] * final_coord_size))
+
         output_coors_list = [tuple(row) for row in output_coors_full]
         
         return input_coors_list, output_coors_list, final_coord_size
