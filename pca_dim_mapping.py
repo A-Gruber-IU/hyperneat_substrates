@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 class PCAanalyzer:
     """
     Handles PCA analysis of environment data to determine substrate coordinates.
-    It stores the fitted PCA model to allow for separate analysis and plotting steps.
+    It now includes a dedicated dimension for network layering.
     """
     def __init__(self, data, obs_size, act_size, variance_threshold, max_dims):
         if data.shape[1] != obs_size + act_size:
@@ -20,47 +20,59 @@ class PCAanalyzer:
         self.variance_threshold = variance_threshold
         self.max_dims = max_dims
         
-        # Attributes that will be computed and stored
         self.pca = None
         self.final_dims = None
 
-    def generate_input_coordinates(self):
+    def generate_io_coordinates(self):
         """
-        Runs PCA on the data and returns the input/output coordinates based on the
-        variance threshold and max dimension limit.
+        Runs PCA to generate feature coordinates and then augments them with a
+        dedicated dimension for network layering (inputs at 0, outputs at 1).
         """
         print(
-            f"Running PCA to find dimensions covering {self.variance_threshold*100:.1f}% of variance "
+            f"Running PCA to find feature dimensions covering {self.variance_threshold*100:.1f}% of variance "
             f"(with a hard limit of {self.max_dims} dimensions)..."
         )
         
-        # 1. Standardize the data and fit the PCA model
+        # 1. Standardize and fit PCA to find the FEATURE dimensions
         scaler = StandardScaler()
         scaled_data = scaler.fit_transform(self.data)
         self.pca = PCA()
         self.pca.fit(scaled_data)
 
-        # 2. Determine the number of dimensions dynamically
+        # 2. Determine the number of FEATURE dimensions dynamically
         cumulative_variance = np.cumsum(self.pca.explained_variance_ratio_)
         dims_for_variance = np.argmax(cumulative_variance >= self.variance_threshold) + 1
-        self.final_dims = min(dims_for_variance, self.max_dims)
+        self.final_dims = min(dims_for_variance, self.max_dims) # This is the number of PCA dims
 
         print(
-            f"PCA found {dims_for_variance} dimensions are needed for {self.variance_threshold*100:.1f}% variance."
+            f"PCA found {dims_for_variance} dimensions needed for {self.variance_threshold*100:.1f}% variance."
         )
-        print(f"Applying max limit. Final number of dimensions: {self.final_dims}")
+        print(f"Applying max limit. Final number of feature dimensions: {self.final_dims}")
 
-        # 3. Extract and return the coordinates
-        all_coords = self.pca.components_[:self.final_dims].T
-        input_coors = all_coords[:self.obs_size]
-        output_coors = all_coords[self.obs_size:]
+        # 3. Extract the feature coordinates from PCA results
+        all_feature_coords = self.pca.components_[:self.final_dims].T
+        input_feature_coors = all_feature_coords[:self.obs_size]
+        output_feature_coors = all_feature_coords[self.obs_size:]
+
+        # Augment coordinates with the layering dimension
+        # Create a column of zeros for the input layer (layer 0)
+        input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
+        # Create a column of ones for the output layer (layer 1)
+        output_layer_dim = np.ones((output_feature_coors.shape[0], 1))
+
+        # Horizontally stack the feature coordinates with the new layer dimension
+        input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
+        output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
+
+        # 5. The total coordinate size is now PCA dims + 1
+        final_coord_size = self.final_dims + 1
+        print(f"Added layering dimension. Final coordinate size: {final_coord_size}")
+
+        # 6. Convert to list of tuples for compatibility
+        input_coors_list = [tuple(row) for row in input_coors_full]
+        output_coors_list = [tuple(row) for row in output_coors_full]
         
-        input_coors_list = [tuple(row) for row in input_coors]
-        output_coors_list = [tuple(row) for row in output_coors]
-
-        input_coors_list.append(tuple([0.0] * self.final_dims))
-
-        return input_coors_list, output_coors_list, self.final_dims
+        return input_coors_list, output_coors_list, final_coord_size
 
     def plot_variance(self, save_path: str):
         """
@@ -68,13 +80,14 @@ class PCAanalyzer:
         This method must be called after generate_input_coordinates has been run.
         """
         if self.pca is None or self.final_dims is None:
-            raise RuntimeError("You must call `generate_input_coordinates()` before calling `plot_variance()`.")
+            raise RuntimeError("You must call `generate_coordinates()` before calling `plot_variance()`.")
 
         display_components = len(self.pca.explained_variance_ratio_)
         fig, ax1 = plt.subplots(figsize=(12, 7))
-        
-        ax1.set_xlabel('Principal Component')
+
+        ax1.set_xlabel('Principal Component (Feature Dimensions)')
         ax1.set_ylabel('Explained Variance (%)', color='tab:blue')
+        
         ax1.bar(
             range(1, display_components + 1),
             self.pca.explained_variance_ratio_ * 100,

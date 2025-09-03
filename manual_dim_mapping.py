@@ -1,4 +1,4 @@
-class SubstrateGenerator:
+class ManualInputMapper:
 
     @staticmethod
     def get_all_manual_mappings(hidden_depth):
@@ -100,18 +100,19 @@ class SubstrateGenerator:
 
         # Calculate coordinate dimensions
         self.base_feature_width = max(self.dim_mapping.keys()) + 1
+        print(f"Number of feature dimensions: {self.base_feature_width}")
         
-        # The single time dimension is added after the base features
-        self.time_dim_idx = self.base_feature_width
         self.coord_size = self.base_feature_width + 2 # Features + 2 Special Dims
+        print(f"Total number after adding output and layering dimensions (coord_size): {self.coord_size}")
 
     def get_input_coors(self):
-        coords = self._generate_obs_coordinates()
-        coords.append(tuple([0.0] * self.coord_size)) # bias input
-        return coords, self.coord_size
+        input_coords = self._generate_obs_coordinates()
+        input_coords.append(tuple([0.0] * self.coord_size)) # bias input
+        print(f"Number of input nodes (obs + bias): {len(input_coords)}")
+        return input_coords, self.coord_size
 
     def _generate_obs_coordinates(self):
-        coordinates = []
+        obs_coords = []
         for node_index in range(self.obs_size):
             coord = [0.0] * self.coord_size
             for dim_idx, concepts in self.dim_mapping.items():
@@ -119,6 +120,26 @@ class SubstrateGenerator:
                     if node_index in nodes:
                         coord[dim_idx] = value
                         break
-            coordinates.append(tuple(coord))
-        return coordinates
+            obs_coords.append(tuple(coord))
+        return obs_coords
     
+    def get_output_coors(self, coord_size):
+        # Try to get the specific output mapping first
+        output_coords = self.mapping.get("output")
+        if output_coords:
+            print(f"Using user-defined output mapping for '{self.env_name}'.")
+            # Validate that the user-defined coordinates have the correct width
+            for i, c in enumerate(output_coords):
+                if len(c) != coord_size:
+                    raise ValueError(f"Output coordinate at index {i} for '{self.env_name}' has width {len(c)}, but calculated coord_size is {coord_size}. Please check the mapping.")
+            print(f"Number of output nodes: {len(output_coords)}")
+            return output_coords
+        
+        # Fallback to generic output coordinates if none are defined
+        print(f"Warning: No output mapping for '{self.env_name}'. Using a generic one.")
+        output_coors = []
+        feature_dims = coord_size - 2
+        for i in range(self.act_size):
+            coord = tuple([0] * feature_dims + [i + 1] + [self.hidden_depth + 1])
+            output_coors.append(coord)
+        return output_coors
