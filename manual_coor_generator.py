@@ -107,11 +107,12 @@ class ManualInputMapper:
         self.coord_size = self.base_feature_width + 2 # Features + 2 Special Dims
         print(f"Total number after adding output and layering dimensions (coord_size): {self.coord_size}")
 
-    def get_input_coors(self):
+    def generate_io_coordinates(self):
         input_coords = self._generate_obs_coordinates()
         input_coords.append(tuple([0.0] * self.coord_size)) # bias input
         print(f"Number of input nodes (obs + bias): {len(input_coords)}")
-        return input_coords, self.coord_size
+        output_coords = self._get_output_coors(self.coord_size)
+        return input_coords, output_coords
 
     def _generate_obs_coordinates(self):
         obs_coords = []
@@ -125,7 +126,7 @@ class ManualInputMapper:
             obs_coords.append(tuple(coord))
         return obs_coords
     
-    def get_output_coors(self, coord_size):
+    def _get_output_coors(self, coord_size):
         # Try to get the specific output mapping first
         output_coords = self.mapping.get("output")
         if output_coords:

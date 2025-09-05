@@ -1,7 +1,7 @@
 
-class SubstrateGenerator:
+class HiddenLayerGenerator:
     """
-    Handles the generation of substrate coordinates, particularly for hidden layers and output nodes.
+    Handles the generation of substrate coordinates for hidden layers.
     """
     def __init__(self, env_name, obs_size, act_size, hidden_layer_type, hidden_depth):
         self.env_name = env_name
@@ -10,8 +10,9 @@ class SubstrateGenerator:
         self.hidden_layer_type = hidden_layer_type
         self.hidden_depth = hidden_depth
     
-    def get_hidden_coors(self, input_coors, coord_size):
+    def get_hidden_coors(self, input_coors):
         hidden_coors = []
+        coord_size = len(input_coors[0])
         if coord_size <= 1:
             return []
         num_features = coord_size - 1

@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 import numpy as np
+from config import config
 from tensorneat import Pipeline
 from tensorneat.algorithm.neat import NEAT
 from tensorneat.algorithm.hyperneat import HyperNEATFeedForward, MLPSubstrate
@@ -40,7 +41,7 @@ def collect_random_policy_data(env_problem, key, num_steps) -> np.ndarray:
     return jax.device_get(collected_data)
 
 
-def collect_expert_policy_data(
+def collect_trained_agent_policy_data(
     env_problem,
     key,
     num_steps: int,
@@ -61,47 +62,52 @@ def collect_expert_policy_data(
     
     # Create the MLP Substrate
     hidden_width_mlp = int(obs_size * 1.5)
-    mlp_layers = [obs_size+1] + [hidden_width_mlp] * training_config['hidden_depth'] + [act_size]
+    mlp_layers = [obs_size+1] + [hidden_width_mlp] * training_config["hidden_depth"] + [act_size]
     mlp_substrate = MLPSubstrate(layers=mlp_layers)
     query_dim = int(mlp_substrate.query_coors.shape[1])
-    print("Qurey dimension for sampling: ", query_dim)
+    print("Query dimension for sampling: ", query_dim)
+
+    algo_params = config["algorithm"] # for convenience
 
     # Create the NEAT components from the config
     conn_gene = DefaultConn(
-        weight_mutate_power=0.25, 
-        weight_mutate_rate=0.3,
-        weight_lower_bound=-1.0,
-        weight_upper_bound=1.0,
+        weight_mutate_power=algo_params["conn_weight_mutate_power"],
+        weight_mutate_rate=algo_params["conn_weight_mutate_rate"],
+        weight_lower_bound=algo_params["conn_weight_lower_bound"],
+        weight_upper_bound=algo_params["conn_weight_upper_bound"],
     )
-    genome = DefaultGenome(
+
+    genome=DefaultGenome(
         num_inputs=query_dim, 
-        num_outputs=1, 
-        output_transform=ACT.tanh,
-        max_nodes=256, 
-        max_conns=1024,
+        num_outputs=1,
+        output_transform=algo_params["cppn_output_activation"],
+        max_nodes=algo_params["cppn_max_nodes"],
+        max_conns=algo_params["cppn_max_conns"],
+        init_hidden_layers=algo_params["cppn_init_hidden_layers"](query_dim),
         mutation=DefaultMutation(
-            node_add=0.3, 
-            conn_add=0.4, 
-            node_delete=0.15, 
-            conn_delete=0.2),
+            node_add=algo_params["node_add_prob"], conn_add=algo_params["conn_add_prob"], 
+            node_delete=algo_params["node_delete_prob"], conn_delete=algo_params["conn_delete_prob"],
+        ),
         conn_gene=conn_gene,
     )
+
     neat_algorithm = NEAT(
-        pop_size=training_config['pop_size'], 
-        species_size=training_config['species_size'],
-        survival_threshold=0.2, 
-        compatibility_threshold=1.0, 
-        species_fitness_func=jnp.max,
-        genome_elitism=2, 
-        species_elitism=3, 
+        pop_size=training_config["pop_size"], 
+        species_size=training_config["species_size"],
+        survival_threshold=algo_params["survival_threshold"],
+        compatibility_threshold=algo_params["compatibility_threshold"],
+        species_fitness_func=algo_params["species_fitness_func"],
+        genome_elitism=algo_params["genome_elitism"],
+        species_elitism=algo_params["species_elitism"],
         genome=genome,
     )
+
     evol_algorithm_mlp = HyperNEATFeedForward(
         substrate=mlp_substrate, 
         neat=neat_algorithm, 
-        activation=ACT.tanh,
-        output_transform=ACT.tanh, 
-        weight_threshold=training_config['weight_threshold'],
+        activation=algo_params["activation_function"],
+        output_transform=algo_params["output_activation"],
+        weight_threshold=config["substrate"]["weight_threshold"],
     )
 
     # Setup and run the training pipeline
@@ -110,8 +116,8 @@ def collect_expert_policy_data(
         algorithm=evol_algorithm_mlp,
         problem=env_problem,
         seed=int(pipeline_key[1]), # Use part of the key for a deterministic seed
-        generation_limit=training_config['generation_limit'],
-        fitness_target=training_config.get('fitness_target', 5000), # Allow optional target
+        generation_limit=training_config["generation_limit"],
+        fitness_target=config["evolution"]["fitness_target"],
     )
     
     init_state = pipeline.setup()

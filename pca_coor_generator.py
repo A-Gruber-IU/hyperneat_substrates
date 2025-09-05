@@ -10,10 +10,7 @@ class PCAanalyzer:
     """
     def __init__(self, data, obs_size, act_size, variance_threshold, max_dims):
         if data.shape[1] != obs_size + act_size:
-            raise ValueError(
-                f"Data shape mismatch. Expected {obs_size + act_size} features, "
-                f"but got {data.shape[1]}."
-            )
+            raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
         self.obs_size = obs_size
         self.act_size = act_size
@@ -33,23 +30,25 @@ class PCAanalyzer:
             f"(with a hard limit of {self.max_dims} dimensions)..."
         )
         
-        # 1. Standardize and fit PCA to find the FEATURE dimensions
+        # Standardize and fit PCA to find the feature dimensions
         scaler = StandardScaler()
         scaled_data = scaler.fit_transform(self.data)
         self.pca = PCA()
         self.pca.fit(scaled_data)
 
-        # 2. Determine the number of FEATURE dimensions dynamically
+        # Determine the number of feature dimensions
         cumulative_variance = np.cumsum(self.pca.explained_variance_ratio_)
         dims_for_variance = np.argmax(cumulative_variance >= self.variance_threshold) + 1
-        self.final_dims = min(dims_for_variance, self.max_dims) # This is the number of PCA dims
+        self.final_dims = min(dims_for_variance, self.max_dims)
 
         print(
             f"PCA found {dims_for_variance} dimensions needed for {self.variance_threshold*100:.1f}% variance."
         )
         print(f"Applying max limit. Final number of feature dimensions: {self.final_dims}")
 
-        # 3. Extract the feature coordinates from PCA results
+        # Extract the feature coordinates from PCA results
+        # pca.components_ has a shape of (num_components, num_features). Each row is a PC. Each column is one of the original nodes. (The .T transposes this)
+        # this effectively uses the PCs' loadings as coordinates, e.g. for 3 PCs a coor would be (loading_on_PC1, loading_on_PC2, loading_on_PC3)
         all_feature_coords = self.pca.components_[:self.final_dims].T
         input_feature_coors = all_feature_coords[:self.obs_size]
         output_feature_coors = all_feature_coords[self.obs_size:]
@@ -64,17 +63,17 @@ class PCAanalyzer:
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
         output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
 
-        # 5. The total coordinate size is now PCA dims + 1
+        # The total coordinate size is now PCA dims + 1
         final_coord_size = self.final_dims + 1
         print(f"Added layering dimension. Final coordinate size: {final_coord_size}")
 
-        # 6. Convert to list of tuples for compatibility
+        # Convert to list of tuples for compatibility
         input_coors_list = [tuple(row) for row in input_coors_full]
         input_coors_list.append(tuple([0.0] * final_coord_size))
 
         output_coors_list = [tuple(row) for row in output_coors_full]
         
-        return input_coors_list, output_coors_list, final_coord_size
+        return input_coors_list, output_coors_list
 
     def plot_variance(self, save_path: str):
         """
@@ -123,3 +122,42 @@ class PCAanalyzer:
         plt.savefig(save_path, dpi=300)
         plt.close(fig)
         print(f"PCA variance plot saved to: {save_path}")
+
+    def plot_principal_components(self, save_path: str):
+        """
+        Generates a heatmap of the principal component loadings, which represent
+        the feature coordinates. This provides a direct comparison to FA and SDL heatmaps.
+        """
+        if self.pca is None or self.final_dims is None:
+            raise RuntimeError("You must call `generate_io_coordinates()` before calling this method.")
+
+        fig, ax = plt.subplots(figsize=(10, 12))
+        
+        # The data for the heatmap is the component matrix (transposed for plotting)
+        # This is the same matrix used to generate the coordinates.
+        components_to_plot = self.pca.components_[:self.final_dims].T
+        
+        # Use a diverging colormap because loadings can be positive or negative
+        cmap = plt.cm.RdBu
+        vmax = np.abs(components_to_plot).max()
+        im = ax.imshow(components_to_plot, cmap=cmap, vmin=-vmax, vmax=vmax, aspect='auto')
+
+        cbar = fig.colorbar(im, ax=ax, orientation='horizontal', pad=0.08)
+        cbar.set_label("Component Loading", weight='bold')
+
+        ax.set_xticks(np.arange(self.final_dims))
+        ax.set_xticklabels([f"PC {i+1}" for i in range(self.final_dims)])
+        
+        ax.set_ylabel("Original Nodes (Sensors & Motors)", weight='bold')
+        ax.set_yticks(np.arange(self.obs_size + self.act_size))
+        
+        ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')
+        ax.text(self.final_dims, self.obs_size / 2, 'Sensors', ha='center', va='center', rotation=-90, color='white', weight='bold')
+        ax.text(self.final_dims, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center', rotation=-90, color='white', weight='bold')
+        
+        ax.set_title(f"Principal Component Loadings ({self.final_dims} Components)", fontsize=16, weight='bold')
+        fig.tight_layout()
+        
+        plt.savefig(save_path, dpi=300)
+        plt.close(fig)
+        print(f"Principal component heatmap saved to: {save_path}")
