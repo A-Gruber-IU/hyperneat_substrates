@@ -21,24 +21,41 @@ class HiddenLayerGenerator:
             
             shift = i + 1
             if self.hidden_layer_type == "shift":
-                base_coords = input_coors[:-1] # Exclude bias
-                for c in base_coords:
-                    new_c = list(c); new_c[-1] = shift; hidden_coors.append(tuple(new_c))
+                for coor in input_coors:
+                    new_coor = list(coor)
+                    new_coor[-1] = shift
+                    hidden_coors.append(tuple(new_coor))
 
             elif self.hidden_layer_type == "one_double_hot":
                 for j in range(num_features):
-                    row = [0.0] * coord_size; row[j] = 1.0; row[-1] = shift; hidden_coors.append(tuple(row))
-                    row = [0.0] * coord_size; row[j] = 2.0; row[-1] = shift; hidden_coors.append(tuple(row))
+                    row_1 = [0.0] * coord_size
+                    row_1[j] = 1.0
+                    row_1[-1] = shift
+                    hidden_coors.append(tuple(row_1))
+                    row_2 = [0.0] * coord_size
+                    row_2[j] = 2.0
+                    row_2[-1] = shift
+                    hidden_coors.append(tuple(row_2))
 
             if self.hidden_layer_type == "two_hot":
                 for j in range(num_features):
-                    row = [0.0] * coord_size; row[j] = 1.0; row[-1] = shift; hidden_coors.append(tuple(row))
+                    row = [0.0] * coord_size
+                    row[j] = 1.0
+                    row[-1] = shift
+                    hidden_coors.append(tuple(row))
                 for j in range(num_features):
                     for k in range(j + 1, num_features):
-                        row = [0.0] * coord_size; row[j] = 1.0; row[k] = 1.0; row[-1] = shift; hidden_coors.append(tuple(row))
+                        row = [0.0] * coord_size
+                        row[j] = 1.0
+                        row[k] = 1.0
+                        row[-1] = shift
+                        hidden_coors.append(tuple(row))
                         
             else: # self.hidden_layer_type == "one_hot" as default
                 for j in range(num_features):
-                    row = [0.0] * coord_size; row[j] = 1.0; row[-1] = shift; hidden_coors.append(tuple(row))
+                    row = [0.0] * coord_size
+                    row[j] = 1.0
+                    row[-1] = shift
+                    hidden_coors.append(tuple(row))
 
         return hidden_coors
