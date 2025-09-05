@@ -28,10 +28,10 @@ config = {
     },
     # EVOLUTION PIPELINE CONFIGURATION
     "evolution": {
-        "generation_limit": 35,
-        "fitness_target": 5000.0,
-        "pop_size": 500,
-        "species_size": 10,
+        "generation_limit": 350,
+        "fitness_target": 10000.0,
+        "pop_size": 1000,
+        "species_size": 20,
     },
     # SUBSTRATE & HYPERNEAT CONFIGURATION
     "substrate": {
@@ -42,20 +42,20 @@ config = {
     },
     # DATA SAMPLING
     "data_sampling": {
-        "sampling_steps": 10000,
+        "sampling_steps": 1000,
         "num_agents_to_sample": 2,
         # Config for the temporary sampling agent
         "trained_agent_sampling": {
-            "generation_limit": 30,
+            "generation_limit": 35,
             "pop_size": 1000,
-            "species_size": 10,
+            "species_size": 20,
             "hidden_depth": 1,
         }
     },
     # DATA ANALYSIS
     "data_analysis": {
-        "variance_threshold": 0.70,
-        "max_dims": lambda obs_size, act_size: int((obs_size+act_size)/3),
+        "variance_threshold": 0.75,
+        "max_dims": lambda obs_size, act_size: int((obs_size+act_size)/4),
         "sdl_alpha": 1.0,
         "sdl_max_iter": 2000,
     },

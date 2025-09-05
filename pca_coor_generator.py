@@ -8,7 +8,7 @@ class PCAanalyzer:
     Handles PCA analysis of environment data to determine substrate coordinates.
     It now includes a dedicated dimension for network layering.
     """
-    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims):
+    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -16,7 +16,7 @@ class PCAanalyzer:
         self.act_size = act_size
         self.variance_threshold = variance_threshold
         self.max_dims = max_dims
-        
+        self.output_depth = hidden_depth + 1
         self.pca = None
         self.final_dims = None
 
@@ -56,8 +56,8 @@ class PCAanalyzer:
         # Augment coordinates with the layering dimension
         # Create a column of zeros for the input layer (layer 0)
         input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
-        # Create a column of ones for the output layer (layer 1)
-        output_layer_dim = np.ones((output_feature_coors.shape[0], 1))
+        # Create a column with depth value (hidden_depth + 1) for output layer
+        output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.output_depth)
 
         # Horizontally stack the feature coordinates with the new layer dimension
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])

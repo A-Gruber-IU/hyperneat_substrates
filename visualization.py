@@ -7,15 +7,14 @@ from matplotlib.cm import ScalarMappable
 import matplotlib.image as mpimg
 from IPython.display import SVG
 
-def visualize_cppn(pipeline, state, output_dir):
+def visualize_cppn(pipeline, state, save_path):
     # visualize cppn
     best_genome = pipeline.best_genome
     cppn_genome = pipeline.algorithm.neat.genome
     cppn_network = cppn_genome.network_dict(state, *best_genome)
-    cppn_vis_path = f"{output_dir}/cppn_network.svg"
-    print(f"Visualizing CPPN. Saving to {cppn_vis_path}.")
-    cppn_genome.visualize(cppn_network, save_path=cppn_vis_path)
-    SVG(filename=cppn_vis_path)
+    print(f"Visualizing CPPN. Saving to {save_path}.")
+    cppn_genome.visualize(cppn_network, save_path=save_path)
+    SVG(filename=save_path)
 
 def visualize_nn(pipeline, state, output_dir, substrate, input_coors, hidden_coors, output_coors, hidden_depth):
 
@@ -70,10 +69,10 @@ def visualize_nn(pipeline, state, output_dir, substrate, input_coors, hidden_coo
         order_vals = np.unique(layer_vals)
         idx_groups = [np.where(layer_vals == v)[0].tolist() for v in order_vals]
         widths = [len(g) for g in idx_groups]
-        return order_vals.tolist(), idx_groups, widths
+        return widths
 
     # Example usage:
-    order_vals, hidden_idx_groups, hidden_widths = compute_hidden_layer_groups(hidden_coors, layer_axis=LAYER_AXIS)
+    hidden_widths = compute_hidden_layer_groups(hidden_coors, layer_axis=LAYER_AXIS)
     # All node keys in substrate order (N,1) -> flatten to ints
     all_node_keys = [int(n[0]) for n in substrate.nodes]
 
@@ -144,8 +143,7 @@ def visualize_nn(pipeline, state, output_dir, substrate, input_coors, hidden_coo
     all_edges = [(int(row[0]), int(row[1])) for row in ac]
     all_weights = np.asarray(active_weights)
 
-    # NEW: Filter out self-loops
-    # Create lists to hold the edges and weights that are NOT self-loops
+    # Create lists to hold the edges and weights that are not self-loops (those are filtered out, because they "bloat" the plot)
     edges_to_add = []
     active_weights_filtered = []
     for edge, weight in zip(all_edges, all_weights):
@@ -295,16 +293,9 @@ def visualize_nn(pipeline, state, output_dir, substrate, input_coors, hidden_coo
 
 
 
-def display_plots_side_by_side(plot_paths: list, plot_titles: list, main_title: str, figsize_per_plot: tuple = (10, 10)):
+def display_plots_side_by_side(plot_paths: list, plot_titles: list, main_title: str, figsize_per_plot: tuple = (10, 10), save_path: str = "output"):
     """
     Loads a list of saved image files and displays them side-by-side in a single figure.
-
-    Args:
-        plot_paths (list): A list of file paths to the images to display.
-        plot_titles (list): A corresponding list of titles for each subplot.
-        main_title (str): The main title for the entire figure.
-        figsize_per_plot (tuple): The (width, height) in inches for each individual subplot.
-                                  The total figure width will be scaled by the number of plots.
     """
     if not plot_paths:
         print("Warning: No plot paths provided to display.")
@@ -347,6 +338,7 @@ def display_plots_side_by_side(plot_paths: list, plot_titles: list, main_title: 
     
     # Adjust layout to prevent titles from overlapping
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    
+
+    fig.savefig(save_path, dpi=800)
     # Render the figure in the notebook output
     plt.show()

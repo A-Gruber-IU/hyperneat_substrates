@@ -14,30 +14,52 @@ from tensorneat.common import ACT
 def collect_random_policy_data(env_problem, key, num_steps) -> np.ndarray:
     """
     Collects data by running a random policy in the environment.
-    (This function remains unchanged).
     """
     print(f"Starting data collection for {num_steps} steps using a random policy...")
     
+    # splitting key ensures the randomness of the reset is separate from the randomness of the actions
     key, reset_key = jax.random.split(key)
+
+    # resets the environment to get the starting observation and env_state
     initial_obs, initial_env_state = env_problem.env_reset(reset_key)
     
+    # a zero-vector is used as initial action
+    initial_action = jnp.zeros(env_problem.output_shape)
+    
+    # the "carry" holds the action from the last step
+    initial_carry = (initial_env_state, initial_action)
+    
+    # defines the single-step function for the JAX loop
     def policy_step(carry, key):
-        env_state, last_obs = carry
-        action = jax.random.uniform(
+        # unpacks the state from the previous iteration
+        env_state, last_action = carry
+        
+        # generate random action
+        current_action = jax.random.uniform(
             key, shape=(env_problem.output_shape[0],), minval=-1.0, maxval=1.0
         )
+        
+        # steps the environment using the current action
         next_obs, next_env_state, _, _, _ = env_problem.env_step(
-            jax.random.PRNGKey(0), env_state, action
+            jax.random.PRNGKey(0), env_state, current_action
         )
-        snapshot = jnp.concatenate([last_obs, action])
-        return (next_env_state, next_obs), snapshot
+        
+        # The snapshot records the action from the previous step (last_action) and the observation that RESULTED from it (next_obs).
+        snapshot = jnp.concatenate([last_action, next_obs])
+        
+        # The new carry for the next iteration must include the action we just took.
+        new_carry = (next_env_state, current_action)
 
-    jitted_policy_step = jax.jit(policy_step)
-    step_keys = jax.random.split(key, num_steps)
-    initial_carry = (initial_env_state, initial_obs)
+        return new_carry, snapshot
+
+    # Compiles and runs the simulation loop
+    jitted_policy_step = jax.jit(policy_step) # jit traces the function's operations and converts it to XLA
+    step_keys = jax.random.split(key, num_steps) # takes the main simulation key and split it into num_steps unique sub-keys
+    
+    # final carry is irrelevant, collected data holds array of shape (num_steps, obs_size + act_size)
     (_, _), collected_data = jax.lax.scan(jitted_policy_step, initial_carry, step_keys)
 
-    print("Random data collection finished.")
+    print("Causal data collection finished.")
     return jax.device_get(collected_data)
 
 
@@ -48,13 +70,13 @@ def collect_trained_agent_policy_data(
     training_config: dict
 ) -> np.ndarray:
     """
-    Fully encapsulates the process of training a temporary "expert" agent with
-    an MLP substrate and then collects data by running it in the environment.
+    Fully encapsulates the process of training a temporary agent with
+    a simple MLP substrate and then collects data by running it in the environment.
     """
-    print("\n--- Starting Expert Training and Data Collection ---")
+    print("\nStarting Agent Training and Data Collection")
 
-    # --- Phase 1: Train a baseline agent with a simple MLP substrate ---
-    print("--> Step 1: Configuring and training the expert agent...")
+    # Train a baseline agent with a simple MLP substrate
+    print("Configuring and training the agent...")
 
     # Unpack config and setup environment parameters
     obs_size = env_problem.input_shape[0]
@@ -115,7 +137,7 @@ def collect_trained_agent_policy_data(
     pipeline = Pipeline(
         algorithm=evol_algorithm_mlp,
         problem=env_problem,
-        seed=int(pipeline_key[1]), # Use part of the key for a deterministic seed
+        seed=int(pipeline_key[1]), # Uses part of the key for a deterministic seed
         generation_limit=training_config["generation_limit"],
         fitness_target=config["evolution"]["fitness_target"],
     )
@@ -123,10 +145,10 @@ def collect_trained_agent_policy_data(
     init_state = pipeline.setup()
     trained_state, best_genome = pipeline.auto_run(state=init_state)
 
-    print("--> Step 1 Finished: Expert agent has been trained.")
+    print("Finished: agent has been trained.")
 
-    # --- Phase 2: Collect data using the trained agent ---
-    print(f"--> Step 2: Collecting {num_steps} data points using the expert policy...")
+    # Collect data using the trained agent
+    print(f"Collecting {num_steps} data points using the trained agent policy...")
     
     params = pipeline.algorithm.transform(trained_state, best_genome)
     act_func = pipeline.algorithm.forward
@@ -134,18 +156,38 @@ def collect_trained_agent_policy_data(
     key, reset_key = jax.random.split(key)
     initial_obs, initial_env_state = env_problem.env_reset(reset_key)
 
-    def policy_step(carry, _):
-        env_state, last_obs = carry
-        action = act_func(trained_state, params, last_obs)
-        next_obs, next_env_state, _, _, _ = env_problem.env_step(
-            jax.random.PRNGKey(0), env_state, action
-        )
-        snapshot = jnp.concatenate([last_obs, action])
-        return (next_env_state, next_obs), snapshot
+    # a zero-vector is used as initial action to be recorded
+    initial_action = jnp.zeros(env_problem.output_shape)
 
-    jitted_policy_step = jax.jit(policy_step)
-    initial_carry = (initial_env_state, initial_obs)
-    (_, _), collected_data = jax.lax.scan(jitted_policy_step, initial_carry, None, length=num_steps)
+    # the initial values are stored in an initial carry
+    initial_carry = (initial_env_state, initial_obs, initial_action)
     
-    print("--- Expert Training and Data Collection Finished ---\n")
+    # defines the single-step function for the JAX loop
+    def policy_step(carry, _): # The second argument is unused for a deterministic policy
+        # unpacks the carried over state from the previous iteration
+        env_state, last_obs, last_action = carry
+        
+        # The policy network computes the action for the current step (action_t) based on the observation from the last step (obs_t).
+        current_action = act_func(trained_state, params, last_obs)
+        
+        # Take the step in the environment using the current action
+        next_obs, next_env_state, _, _, _ = env_problem.env_step(
+            jax.random.PRNGKey(0), env_state, current_action
+        )
+        
+        # snapshot records action from the previous step (last_action) and observation that resulted from it (next_obs).
+        snapshot = jnp.concatenate([last_action, next_obs])
+        
+        # defines the values to be carries over into the next loop
+        new_carry = (next_env_state, next_obs, current_action)
+        
+        return new_carry, snapshot
+
+    # Compile and run the simulation loop
+    jitted_policy_step = jax.jit(policy_step)
+    
+    # collected data is the only return value of interest
+    (_, _, _), collected_data = jax.lax.scan(jitted_policy_step, initial_carry, None, length=num_steps)
+    
+    print("Causal expert data collection finished.\n")
     return jax.device_get(collected_data)

@@ -8,7 +8,7 @@ class SparseDictionaryAnalyzer:
     Applies Sparse Dictionary Learning (SDL) to environment data to determine
     substrate coordinates.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, alpha=1.0, max_iter=1000):
+    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, alpha=1.0, max_iter=1000):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -20,6 +20,7 @@ class SparseDictionaryAnalyzer:
         self.alpha = alpha
         self.max_iter = max_iter
         self.sdl = None
+        self.output_depth = hidden_depth + 1
 
     def generate_io_coordinates(self):
         """
@@ -55,7 +56,7 @@ class SparseDictionaryAnalyzer:
 
         # 3. Augment coordinates with the layering dimension
         input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
-        output_layer_dim = np.ones((output_feature_coors.shape[0], 1))
+        output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.output_depth)
 
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
         output_coors_full = np.hstack([output_feature_coors, output_layer_dim])

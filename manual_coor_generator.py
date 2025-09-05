@@ -2,6 +2,7 @@ class ManualInputMapper:
 
     @staticmethod
     def get_all_manual_mappings(hidden_depth):
+        output_depth = hidden_depth + 1
         manual_mappings = {
             "ant": {
                 "input": { # first draft, not including full obs space
@@ -23,14 +24,14 @@ class ManualInputMapper:
                     # not specificially included for torso: [(1.0, [0, 1, 2, 3, 4, 13, 14, 15, 16, 17, 18])],
                 },
                 "output": [
-                    (0, 0, 0, 0, 0, 0, 0, 1, -1, 1, 1, hidden_depth+1), # torque back right hip
-                    (0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1, hidden_depth+1), # torque back right ankle 
-                    (0, 0, 0, 0, 0, 0, 0, -1, 1, 1, 1, hidden_depth+1), # torque front left hip 
-                    (0, 0, 0, 0, 0, 0, 0, -1, 1, -1, 1, hidden_depth+1), # torque front left ankle 
-                    (0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, hidden_depth+1), # torque front right hip
-                    (0, 0, 0, 0, 0, 0, 0, 1, 1, -1, 1, hidden_depth+1), # torque front right ankle
-                    (0, 0, 0, 0, 0, 0, 0, -1, -1, 1, 1, hidden_depth+1), # torque back left hip 
-                    (0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, hidden_depth+1), # torque back left ankle  
+                    (0, 0, 0, 0, 0, 0, 0, 1, -1, 1, 1, output_depth), # torque back right hip
+                    (0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1, output_depth), # torque back right ankle 
+                    (0, 0, 0, 0, 0, 0, 0, -1, 1, 1, 1, output_depth), # torque front left hip 
+                    (0, 0, 0, 0, 0, 0, 0, -1, 1, -1, 1, output_depth), # torque front left ankle 
+                    (0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, output_depth), # torque front right hip
+                    (0, 0, 0, 0, 0, 0, 0, 1, 1, -1, 1, output_depth), # torque front right ankle
+                    (0, 0, 0, 0, 0, 0, 0, -1, -1, 1, 1, output_depth), # torque back left hip 
+                    (0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, output_depth), # torque back left ankle  
                 ]},
             "halfcheetah": {
                 "input": {
@@ -50,12 +51,12 @@ class ManualInputMapper:
                     # 7: layering direction
                 },
                 "output": [
-                    (-1, 1, 0, 0, 0, 1, hidden_depth+1), # torque back thigh rotor 
-                    (-1, 0, 0, 0, 0, 1, hidden_depth+1), # torque back shin rotor 
-                    (-1, -1, 0, 0, 0, 1, hidden_depth+1), # torque back foot rotor  
-                    (1, 1, 0, 0, 0, 1, hidden_depth+1), # torque front thigh rotor  
-                    (1, 0, 0, 0, 0, 1, hidden_depth+1), # torque front shin rotor 
-                    (1, -1, 0, 0, 0, 1, hidden_depth+1), # torque front foor rotor  
+                    (-1, 1, 0, 0, 0, 1, output_depth), # torque back thigh rotor 
+                    (-1, 0, 0, 0, 0, 1, output_depth), # torque back shin rotor 
+                    (-1, -1, 0, 0, 0, 1, output_depth), # torque back foot rotor  
+                    (1, 1, 0, 0, 0, 1, output_depth), # torque front thigh rotor  
+                    (1, 0, 0, 0, 0, 1, output_depth), # torque front shin rotor 
+                    (1, -1, 0, 0, 0, 1, output_depth), # torque front foor rotor  
                 ]},
             "swimmer":{
                 "input": {
@@ -70,8 +71,8 @@ class ManualInputMapper:
                     # 7: layering direction
                 },
                 "output": [
-                    (1, 0, 0, 0, 0, 0, 1, hidden_depth+1), # torque first rotor
-                    (-1, 0, 0, 0, 0, 0, 1, hidden_depth+1), # torque second rotor
+                    (1, 0, 0, 0, 0, 0, 1, output_depth), # torque first rotor
+                    (-1, 0, 0, 0, 0, 0, 1, output_depth), # torque second rotor
                 ]},
         }
         return manual_mappings
