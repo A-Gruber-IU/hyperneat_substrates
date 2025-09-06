@@ -31,7 +31,7 @@ config = {
         "generation_limit": 350,
         "fitness_target": 10000.0,
         "pop_size": 1000,
-        "species_size": 20,
+        "species_size": 10,
     },
     # SUBSTRATE & HYPERNEAT CONFIGURATION
     "substrate": {
@@ -48,7 +48,7 @@ config = {
         "trained_agent_sampling": {
             "generation_limit": 35,
             "pop_size": 1000,
-            "species_size": 20,
+            "species_size": 10,
             "hidden_depth": 1,
         }
     },
