@@ -1,9 +1,9 @@
 import jax.numpy as jnp
 from tensorneat.common import ACT
 
-from pca_coor_generator import PCAanalyzer
-from fa_coor_generator import FactorAnalyzer
-from sdl_coor_generator import SparseDictionaryAnalyzer
+from substrate_generation.pca_coor_generator import PCAanalyzer
+from substrate_generation.fa_coor_generator import FactorAnalyzer
+from substrate_generation.sdl_coor_generator import SparseDictionaryAnalyzer
 
 config = {
     # TOP-LEVEL EXPERIMENT SETTINGS

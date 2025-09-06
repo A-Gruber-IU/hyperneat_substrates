@@ -1,4 +1,3 @@
-
 class HiddenLayerGenerator:
     """
     Handles the generation of substrate coordinates for hidden layers.
