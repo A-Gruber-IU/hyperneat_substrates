@@ -7,7 +7,7 @@ class InvPCAanalyzer:
     """
     Handles inverse PCA analysis of environment data to determine substrate coordinates which express least variance.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, seed=None):
+    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, seed=None, width_factor=1.0):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch...")
         self.data = data
@@ -16,6 +16,7 @@ class InvPCAanalyzer:
         self.max_dims = max_dims
         self.output_depth = hidden_depth + 1
         self.seed = seed
+        self.width_factor = width_factor
         self.pca = None
         self.final_dims_indices = None # Renamed for clarity
 
@@ -42,6 +43,11 @@ class InvPCAanalyzer:
         output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.output_depth)
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
         output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
+
+        if self.width_factor != 1.0:
+            print(f"Applying width factor: {self.width_factor}")
+            input_coors_full[:, :-1] *= self.width_factor
+            output_coors_full[:, :-1] *= self.width_factor
 
         final_coord_size = self.max_dims + 1
         print(f"Found PCs with minimum variance and added layering dimension. Final coordinate size: {final_coord_size}")

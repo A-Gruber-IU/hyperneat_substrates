@@ -1,3 +1,5 @@
+import numpy as np
+
 class ManualInputMapper:
 
     @staticmethod
@@ -83,12 +85,14 @@ class ManualInputMapper:
                  act_size, 
                  hidden_layer_type, 
                  hidden_depth,
+                 width_factor
                 ):
         self.env_name = env_name
         self.obs_size = obs_size
         self.act_size = act_size
         self.hidden_layer_type = hidden_layer_type
         self.hidden_depth = hidden_depth
+        self.width_factor = width_factor # make substrate potentially equally wide and deep
 
         all_manual_mappings = self.get_all_manual_mappings(self.hidden_depth)
         self.mapping = all_manual_mappings.get(self.env_name, {})
@@ -110,9 +114,23 @@ class ManualInputMapper:
 
     def generate_io_coordinates(self):
         input_coords = self._generate_obs_coordinates()
+        output_coords = self._get_output_coors(self.coord_size)
+
+        if self.width_factor != 1.0:
+            print(f"Applying width factor: {self.width_factor}")
+            # Convert list of tuples to NumPy array
+            input_coords_np = np.array(input_coords, dtype=float)
+            output_coords_np = np.array(output_coords, dtype=float)
+            # Apply scaling to all dimensions except the last one
+            input_coords_np[:, :-1] *= self.width_factor
+            output_coords_np[:, :-1] *= self.width_factor
+            # Convert back to a list of tuples
+            input_coords = [tuple(row) for row in input_coords_np]
+            output_coords = [tuple(row) for row in output_coords_np]
+        
         input_coords.append(tuple([0.0] * self.coord_size)) # bias input
         print(f"Number of input nodes (obs + bias): {len(input_coords)}")
-        output_coords = self._get_output_coors(self.coord_size)
+
         return input_coords, output_coords
 
     def _generate_obs_coordinates(self):

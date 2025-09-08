@@ -7,7 +7,7 @@ class PCAanalyzer:
     """
     Handles PCA analysis of environment data to determine substrate coordinates which express highest variance.
     """
-    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth):
+    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth, width_factor=1.0):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -16,6 +16,7 @@ class PCAanalyzer:
         self.variance_threshold = variance_threshold
         self.max_dims = max_dims
         self.output_depth = hidden_depth + 1
+        self.width_factor = width_factor
         self.pca = None
         self.final_dims = None
 
@@ -61,6 +62,11 @@ class PCAanalyzer:
         # Horizontally stack the feature coordinates with the new layer dimension
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
         output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
+
+        if self.width_factor != 1.0:
+            print(f"Applying width factor: {self.width_factor}")
+            input_coors_full[:, :-1] *= self.width_factor
+            output_coors_full[:, :-1] *= self.width_factor
 
         # The total coordinate size is now PCA dims + 1
         final_coord_size = self.final_dims + 1

@@ -25,6 +25,19 @@ class HiddenLayerGenerator:
                     new_coor[-1] = shift
                     hidden_coors.append(tuple(new_coor))
 
+            if self.hidden_layer_type == "shift_two":
+                for coor in input_coors:
+                    new_coor = list(coor)
+                    new_coor[-1] = shift
+                    hidden_coors.append(tuple(new_coor))
+                for coor in input_coors:
+                    new_coor = list(coor)
+                    for i in range(len(new_coor) - 1):
+                        new_coor[i] *= 2
+                    new_coor[-1] = shift
+                    hidden_coors.append(tuple(new_coor))
+
+
             elif self.hidden_layer_type == "one_double_hot":
                 for j in range(num_features):
                     row_1 = [0.0] * coord_size

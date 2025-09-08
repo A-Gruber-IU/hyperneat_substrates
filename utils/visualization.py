@@ -16,7 +16,7 @@ def visualize_cppn(pipeline, state, save_path):
     cppn_genome.visualize(cppn_network, save_path=save_path)
     SVG(filename=save_path)
 
-def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coors, output_coors, hidden_depth):
+def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coors, output_coors, hidden_depth, weight_lower_limit, weight_upper_limit):
 
     best_genome = pipeline.best_genome
     print("Manually reconstructing the phenotype. A visual layout will be generated.")
@@ -132,8 +132,8 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
                 f"Use a scalar like 0.0 or 1.0. Original error: {e}"
             )
 
-    LOWER = _to_float_bound(-1, "WEIGHT_LOWER_BOUND")
-    UPPER = _to_float_bound(1, "WEIGHT_UPPER_BOUND")
+    LOWER = _to_float_bound(weight_lower_limit, "WEIGHT_LOWER_BOUND")
+    UPPER = _to_float_bound(weight_upper_limit, "WEIGHT_UPPER_BOUND")
 
     # Your active_conns rows look like [src, dst, extra]; take first two columns
     ac = np.asarray(active_conns)

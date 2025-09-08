@@ -8,7 +8,7 @@ class FactorAnalyzer:
     Handles Factor Analysis of environment data to determine substrate coordinates.
     It serves as an alternative to the PCAanalyzer.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth):
+    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, width_factor=1.0):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -17,6 +17,7 @@ class FactorAnalyzer:
         # For Factor Analysis, we must specify the number of components (factors) beforehand.
         self.num_factors = max_dims
         self.output_depth = hidden_depth + 1
+        self.width_factor = width_factor
         self.fa = None
 
     def generate_io_coordinates(self):
@@ -51,6 +52,11 @@ class FactorAnalyzer:
 
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
         output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
+
+        if self.width_factor != 1.0:
+            print(f"Applying width factor: {self.width_factor}")
+            input_coors_full[:, :-1] *= self.width_factor
+            output_coors_full[:, :-1] *= self.width_factor
 
         # 4. The total coordinate size is num_factors + 1
         final_coord_size = self.num_factors + 1
