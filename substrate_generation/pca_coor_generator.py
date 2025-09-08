@@ -5,8 +5,7 @@ from sklearn.preprocessing import StandardScaler
 
 class PCAanalyzer:
     """
-    Handles PCA analysis of environment data to determine substrate coordinates.
-    It now includes a dedicated dimension for network layering.
+    Handles PCA analysis of environment data to determine substrate coordinates which express highest variance.
     """
     def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth):
         if data.shape[1] != obs_size + act_size:
@@ -69,7 +68,7 @@ class PCAanalyzer:
 
         # Convert to list of tuples for compatibility
         input_coors_list = [tuple(row) for row in input_coors_full]
-        input_coors_list.append(tuple([0.0] * final_coord_size))
+        input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node
 
         output_coors_list = [tuple(row) for row in output_coors_full]
         

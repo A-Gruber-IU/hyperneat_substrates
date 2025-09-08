@@ -58,7 +58,7 @@ class FactorAnalyzer:
 
         # 5. Convert to list of tuples for compatibility
         input_coors_list = [tuple(row) for row in input_coors_full]
-        # Adding a bias node should be done in the main script, not here.
+        input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node
         
         output_coors_list = [tuple(row) for row in output_coors_full]
         

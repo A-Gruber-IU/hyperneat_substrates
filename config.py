@@ -1,10 +1,6 @@
 import jax.numpy as jnp
 from tensorneat.common import ACT
 
-from substrate_generation.pca_coor_generator import PCAanalyzer
-from substrate_generation.fa_coor_generator import FactorAnalyzer
-from substrate_generation.sdl_coor_generator import SparseDictionaryAnalyzer
-
 config = {
     # TOP-LEVEL EXPERIMENT SETTINGS
     "experiment": {
@@ -13,25 +9,27 @@ config = {
     },
     # ENVIRONMENT CONFIGURATION
     "environment": {
-        "backend": "generalized",
+        "backend": "mjx", # mjx / generalized / positional / spring
         "max_step": 1000,
         "repeat_times": 5,
         "args_sets": {  # Specific reward/cost weights for each environment
             "ant": {
-                "healthy_reward": 0.1,
-                "ctrl_cost_weight": 1e-4,
-                "contact_cost_weight": 5e-5,
+                "healthy_reward": 0.1, # default 0.1
+                "ctrl_cost_weight": 0.05, # default 0.5
+                "contact_cost_weight": 0.00005, # default 5e-4
             },
-            "halfcheetah": { "forward_reward_weight": 2.0, "ctrl_cost_weight": 0.05 },
+            "halfcheetah": { 
+                "forward_reward_weight": 2.0, 
+                "ctrl_cost_weight": 0.05 },
             "swimmer": { "ctrl_cost_weight": 0.0001 }
         }
     },
     # EVOLUTION PIPELINE CONFIGURATION
     "evolution": {
-        "generation_limit": 350,
+        "generation_limit": 400,
         "fitness_target": 10000.0,
-        "pop_size": 1000,
-        "species_size": 10,
+        "pop_size": 600,
+        "species_size": 15,
     },
     # SUBSTRATE & HYPERNEAT CONFIGURATION
     "substrate": {
@@ -48,30 +46,30 @@ config = {
         "trained_agent_sampling": {
             "generation_limit": 35,
             "pop_size": 1000,
-            "species_size": 10,
+            "species_size": 20,
             "hidden_depth": 1,
         }
     },
     # DATA ANALYSIS
     "data_analysis": {
-        "variance_threshold": 0.75,
-        "max_dims": lambda obs_size, act_size: int((obs_size+act_size)/4),
+        "variance_threshold": 0.65,
+        "max_dims": lambda obs_size: int(obs_size/4),
         "sdl_alpha": 1.0,
         "sdl_max_iter": 2000,
     },
     # CORE NEAT / CPPN GENOME CONFIGURATION
     "algorithm": {
-        "conn_weight_mutate_power": 0.25,
-        "conn_weight_mutate_rate": 0.3,
+        "conn_weight_mutate_power": 0.2,
+        "conn_weight_mutate_rate": 0.25,
         "conn_weight_lower_bound": -1.0,
         "conn_weight_upper_bound": 1.0,
         "cppn_output_activation": ACT.tanh,
         "cppn_max_nodes": 256,
         "cppn_max_conns": 1024,
         "cppn_init_hidden_layers": lambda query_dim: [int(query_dim / 4)],
-        "node_add_prob": 0.4,
-        "conn_add_prob": 0.5,
-        "node_delete_prob": 0.15,
+        "node_add_prob": 0.15,
+        "conn_add_prob": 0.25,
+        "node_delete_prob": 0.10,
         "conn_delete_prob": 0.2,
         "survival_threshold": 0.10,
         "compatibility_threshold": 1.0,

@@ -16,7 +16,7 @@ def visualize_cppn(pipeline, state, save_path):
     cppn_genome.visualize(cppn_network, save_path=save_path)
     SVG(filename=save_path)
 
-def visualize_nn(pipeline, state, output_dir, substrate, input_coors, hidden_coors, output_coors, hidden_depth):
+def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coors, output_coors, hidden_depth):
 
     best_genome = pipeline.best_genome
     print("Manually reconstructing the phenotype. A visual layout will be generated.")
@@ -284,7 +284,7 @@ def visualize_nn(pipeline, state, output_dir, substrate, input_coors, hidden_coo
         cbar_pos.ax.xaxis.set_ticks_position('bottom')
         cbar_pos.set_ticks([0, UPPER/2, UPPER])
 
-    out_path = f"{output_dir}/ANN.svg"
+    out_path = f"{save_path}"
     fig.savefig(out_path, dpi=800)
     plt.show()
     plt.close(fig)

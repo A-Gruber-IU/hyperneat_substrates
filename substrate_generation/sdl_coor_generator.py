@@ -67,6 +67,8 @@ class SparseDictionaryAnalyzer:
 
         # 5. Convert to list of tuples
         input_coors_list = [tuple(row) for row in input_coors_full]
+        input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node
+
         output_coors_list = [tuple(row) for row in output_coors_full]
         
         return input_coors_list, output_coors_list
