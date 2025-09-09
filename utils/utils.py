@@ -25,6 +25,7 @@ def save_coordinates_to_csv(
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
+
 def setup_folder_structure(output_dir: str):
     if not os.path.exists(f"output"):
         os.mkdir("output")

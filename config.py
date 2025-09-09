@@ -38,7 +38,7 @@ config = {
     "substrate": {
         "hidden_layer_type": "shift",
         "hidden_depth": 2,
-        "width_factor": 2,
+        "width_factor": 1,
         "weight_threshold": 0.1,
         "recurrent_activations": 25,
     },
@@ -60,6 +60,7 @@ config = {
         "max_dims": lambda obs_size: int(obs_size/4),
         "sdl_alpha": 1.0,
         "sdl_max_iter": 2000,
+        "normalize_coors": True,
     },
     # CORE NEAT / CPPN GENOME CONFIGURATION
     "algorithm": {

@@ -113,28 +113,28 @@ class ManualInputMapper:
         print(f"Total number after adding output and layering dimensions (coord_size): {self.coord_size}")
 
     def generate_io_coordinates(self):
-        input_coords = self._generate_obs_coordinates()
-        output_coords = self._get_output_coors(self.coord_size)
+        input_coors = self._generate_obs_coordinates()
+        output_coors = self._get_output_coors(self.coord_size)
 
         if self.width_factor != 1.0:
             print(f"Applying width factor: {self.width_factor}")
             # Convert list of tuples to NumPy array
-            input_coords_np = np.array(input_coords, dtype=float)
-            output_coords_np = np.array(output_coords, dtype=float)
+            input_coors_np = np.array(input_coors, dtype=float)
+            output_coors_np = np.array(output_coors, dtype=float)
             # Apply scaling to all dimensions except the last one
-            input_coords_np[:, :-1] *= self.width_factor
-            output_coords_np[:, :-1] *= self.width_factor
+            input_coors_np[:, :-1] *= self.width_factor
+            output_coors_np[:, :-1] *= self.width_factor
             # Convert back to a list of tuples
-            input_coords = [tuple(row) for row in input_coords_np]
-            output_coords = [tuple(row) for row in output_coords_np]
+            input_coors = [tuple(row) for row in input_coors_np]
+            output_coors = [tuple(row) for row in output_coors_np]
         
-        input_coords.append(tuple([0.0] * self.coord_size)) # bias input
-        print(f"Number of input nodes (obs + bias): {len(input_coords)}")
+        input_coors.append(tuple([0.0] * self.coord_size)) # bias input
+        print(f"Number of input nodes (obs + bias): {len(input_coors)}")
 
-        return input_coords, output_coords
+        return input_coors, output_coors
 
     def _generate_obs_coordinates(self):
-        obs_coords = []
+        obs_coors = []
         for node_index in range(self.obs_size):
             coord = [0.0] * self.coord_size
             for dim_idx, concepts in self.dim_mapping.items():
@@ -142,19 +142,19 @@ class ManualInputMapper:
                     if node_index in nodes:
                         coord[dim_idx] = value
                         break
-            obs_coords.append(tuple(coord))
-        return obs_coords
+            obs_coors.append(tuple(coord))
+        return obs_coors
     
     def _get_output_coors(self, coord_size):
         # Try to get the specific output mapping first
-        output_coords = self.mapping.get("output")
-        if output_coords:
+        output_coors = self.mapping.get("output")
+        if output_coors:
             # Validate that the user-defined coordinates have the correct width
-            for i, c in enumerate(output_coords):
+            for i, c in enumerate(output_coors):
                 if len(c) != coord_size:
                     raise ValueError(f"Output coordinate at index {i} for '{self.env_name}' has width {len(c)}, but calculated coord_size is {coord_size}. Please check the mapping.")
-            print(f"Number of output nodes: {len(output_coords)}")
-            return output_coords
+            print(f"Number of output nodes: {len(output_coors)}")
+            return output_coors
         
         # Fallback to generic output coordinates if none are defined
         print(f"Warning: No output mapping for '{self.env_name}'. Using a generic one.")

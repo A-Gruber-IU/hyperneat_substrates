@@ -2,22 +2,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import FactorAnalysis
 from sklearn.preprocessing import StandardScaler
+from substrate_generation.io_coor_processing import process_coordinates
 
 class FactorAnalyzer:
     """
     Handles Factor Analysis of environment data to determine substrate coordinates.
     It serves as an alternative to the PCAanalyzer.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, width_factor=1.0):
+    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, width_factor=1.0, normalize_coors=True):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
         self.obs_size = obs_size
         self.act_size = act_size
         # For Factor Analysis, we must specify the number of components (factors) beforehand.
-        self.num_factors = max_dims
+        self.feature_dims = max_dims
         self.output_depth = hidden_depth + 1
         self.width_factor = width_factor
+        self.normalize_coors = normalize_coors
         self.fa = None
 
     def generate_io_coordinates(self):
@@ -26,14 +28,14 @@ class FactorAnalyzer:
         dedicated dimension for network layering (inputs at 0, outputs at 1).
         """
         print(
-            f"Running Factor Analysis to find {self.num_factors} latent factors..."
+            f"Running Factor Analysis to find {self.feature_dims} latent factors..."
         )
         
         # 1. Standardize and fit FA to find the latent factors
         scaler = StandardScaler()
         scaled_data = scaler.fit_transform(self.data)
         
-        self.fa = FactorAnalysis(n_components=self.num_factors, random_state=0)
+        self.fa = FactorAnalysis(n_components=self.feature_dims, random_state=0)
         self.fa.fit(scaled_data)
 
         print(f"Factor Analysis complete. Extracting coordinates (factor loadings).")
@@ -41,32 +43,17 @@ class FactorAnalyzer:
         # 2. Extract the feature coordinates from the factor loadings.
         # fa.components_ has a shape of (num_factors, num_features).
         # The values are the "loadings" of each node onto each factor.
-        # We transpose to get (num_features, num_factors).
-        all_feature_coords = self.fa.components_.T
-        input_feature_coors = all_feature_coords[:self.obs_size]
-        output_feature_coors = all_feature_coords[self.obs_size:]
+        # The values are transposed to get (num_features, num_factors).
+        all_feature_coors = self.fa.components_.T
 
-        # 3. Augment coordinates with the layering dimension
-        input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
-        output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.output_depth)
-
-        input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
-        output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
-
-        if self.width_factor != 1.0:
-            print(f"Applying width factor: {self.width_factor}")
-            input_coors_full[:, :-1] *= self.width_factor
-            output_coors_full[:, :-1] *= self.width_factor
-
-        # 4. The total coordinate size is num_factors + 1
-        final_coord_size = self.num_factors + 1
-        print(f"Added layering dimension. Final coordinate size: {final_coord_size}")
-
-        # 5. Convert to list of tuples for compatibility
-        input_coors_list = [tuple(row) for row in input_coors_full]
-        input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node
-        
-        output_coors_list = [tuple(row) for row in output_coors_full]
+        input_coors_list, output_coors_list = process_coordinates(
+            all_feature_coors=all_feature_coors,
+            normalize_coors=self.normalize_coors,
+            width_factor=self.width_factor,
+            obs_size=self.obs_size,
+            output_depth=self.output_depth,
+            feature_dims=self.feature_dims,
+        )
         
         return input_coors_list, output_coors_list
 
@@ -93,18 +80,18 @@ class FactorAnalyzer:
         cbar.set_label("Factor Loading", weight='bold')
 
         # Set up ticks and labels
-        ax.set_xticks(np.arange(self.num_factors))
-        ax.set_xticklabels([f"Factor {i+1}" for i in range(self.num_factors)])
+        ax.set_xticks(np.arange(self.feature_dims))
+        ax.set_xticklabels([f"Factor {i+1}" for i in range(self.feature_dims)])
         
         ax.set_ylabel("Original Nodes (Sensors & Motors)", weight='bold')
         ax.set_yticks(np.arange(self.obs_size + self.act_size))
         
         # Add a line to separate sensors from motors
         ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')
-        ax.text(self.num_factors, self.obs_size / 2, 'Sensors', ha='center', va='center', rotation=-90, color='white', weight='bold')
-        ax.text(self.num_factors, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center', rotation=-90, color='white', weight='bold')
+        ax.text(self.feature_dims, self.obs_size / 2, 'Sensors', ha='center', va='center', rotation=-90, color='white', weight='bold')
+        ax.text(self.feature_dims, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center', rotation=-90, color='white', weight='bold')
         
-        ax.set_title(f"Factor Loadings for {self.num_factors} Latent Factors", fontsize=16, weight='bold')
+        ax.set_title(f"Factor Loadings for {self.feature_dims} Latent Factors", fontsize=16, weight='bold')
         fig.tight_layout()
         
         plt.savefig(save_path, dpi=300)

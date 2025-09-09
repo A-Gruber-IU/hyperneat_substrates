@@ -2,24 +2,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import DictionaryLearning
 from sklearn.preprocessing import StandardScaler
+from substrate_generation.io_coor_processing import process_coordinates
 
 class SparseDictionaryAnalyzer:
     """
     Applies Sparse Dictionary Learning (SDL) to environment data to determine
     substrate coordinates.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, alpha=1.0, max_iter=1000, width_factor=1.0):
+    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, alpha=1.0, max_iter=1000, width_factor=1.0, normalize_coors=True):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
         self.obs_size = obs_size
         self.act_size = act_size
         # The number of dictionary "atoms" to learn.
-        self.n_components = max_dims
+        self.feature_dims = max_dims
         # The regularization parameter that encourages sparsity.
         self.alpha = alpha
         self.max_iter = max_iter
         self.width_factor = width_factor
+        self.normalize_coors = normalize_coors
         self.sdl = None
         self.output_depth = hidden_depth + 1
 
@@ -29,7 +31,7 @@ class SparseDictionaryAnalyzer:
         and then augments them with a dedicated dimension for network layering.
         """
         print(
-            f"Running Sparse Dictionary Learning to find {self.n_components} dictionary atoms..."
+            f"Running Sparse Dictionary Learning to find {self.feature_dims} dictionary atoms..."
         )
         
         # 1. Standardize and fit the SDL model
@@ -38,7 +40,7 @@ class SparseDictionaryAnalyzer:
         
         # transform_alpha is the L1 regularization term that promotes sparsity.
         self.sdl = DictionaryLearning(
-            n_components=self.n_components, 
+            n_components=self.feature_dims, 
             transform_alpha=None, 
             random_state=0,
             max_iter=self.max_iter,
@@ -51,32 +53,16 @@ class SparseDictionaryAnalyzer:
 
         # 2. Extract feature coordinates. The dictionary atoms are in .components_
         # Shape is (n_components, n_features). Transpose to get coordinates for each node.
-        all_feature_coords = self.sdl.components_.T
-        input_feature_coors = all_feature_coords[:self.obs_size]
-        output_feature_coors = all_feature_coords[self.obs_size:]
+        all_feature_coors = self.sdl.components_.T
 
-        # 3. Augment coordinates with the layering dimension
-        input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
-        output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.output_depth)
-
-        input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
-        output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
-
-        if self.width_factor != 1.0:
-            print(f"Applying width factor: {self.width_factor}")
-            input_coors_full[:, :-1] *= self.width_factor
-            output_coors_full[:, :-1] *= self.width_factor
-
-
-        # 4. The total coordinate size is n_components + 1
-        final_coord_size = self.n_components + 1
-        print(f"Added layering dimension. Final coordinate size: {final_coord_size}")
-
-        # 5. Convert to list of tuples
-        input_coors_list = [tuple(row) for row in input_coors_full]
-        input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node
-
-        output_coors_list = [tuple(row) for row in output_coors_full]
+        input_coors_list, output_coors_list = process_coordinates(
+            all_feature_coors=all_feature_coors,
+            normalize_coors=self.normalize_coors,
+            width_factor=self.width_factor,
+            obs_size=self.obs_size,
+            output_depth=self.output_depth,
+            feature_dims=self.feature_dims,
+        )
         
         return input_coors_list, output_coors_list
 
@@ -101,17 +87,17 @@ class SparseDictionaryAnalyzer:
         cbar = fig.colorbar(im, ax=ax, orientation='horizontal', pad=0.08)
         cbar.set_label("Atom Loading Value", weight='bold')
 
-        ax.set_xticks(np.arange(self.n_components))
-        ax.set_xticklabels([f"Atom {i+1}" for i in range(self.n_components)])
+        ax.set_xticks(np.arange(self.feature_dims))
+        ax.set_xticklabels([f"Atom {i+1}" for i in range(self.feature_dims)])
         
         ax.set_ylabel("Original Nodes (Sensors & Motors)", weight='bold')
         ax.set_yticks(np.arange(self.obs_size + self.act_size))
         
         ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')
-        ax.text(self.n_components, self.obs_size / 2, 'Sensors', ha='center', va='center', rotation=-90, color='white', weight='bold')
-        ax.text(self.n_components, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center', rotation=-90, color='white', weight='bold')
+        ax.text(self.feature_dims, self.obs_size / 2, 'Sensors', ha='center', va='center', rotation=-90, color='white', weight='bold')
+        ax.text(self.feature_dims, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center', rotation=-90, color='white', weight='bold')
         
-        ax.set_title(f"Learned Dictionary Atoms ({self.n_components} Components)", fontsize=16, weight='bold')
+        ax.set_title(f"Learned Dictionary Atoms ({self.feature_dims} Components)", fontsize=16, weight='bold')
         fig.tight_layout()
         
         plt.savefig(save_path, dpi=300)

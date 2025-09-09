@@ -2,12 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from substrate_generation.io_coor_processing import process_coordinates
 
 class PCAanalyzer:
     """
     Handles PCA analysis of environment data to determine substrate coordinates which express highest variance.
     """
-    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth, width_factor=1.0):
+    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth, width_factor=1.0, normalize_coors=True):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -17,6 +18,7 @@ class PCAanalyzer:
         self.max_dims = max_dims
         self.output_depth = hidden_depth + 1
         self.width_factor = width_factor
+        self.normalize_coors = normalize_coors
         self.pca = None
         self.final_dims = None
 
@@ -49,34 +51,16 @@ class PCAanalyzer:
         # Extract the feature coordinates from PCA results
         # pca.components_ has a shape of (num_components, num_features). Each row is a PC. Each column is one of the original nodes. (The .T transposes this)
         # this effectively uses the PCs' loadings as coordinates, e.g. for 3 PCs a coor would be (loading_on_PC1, loading_on_PC2, loading_on_PC3)
-        all_feature_coords = self.pca.components_[:self.final_dims].T
-        input_feature_coors = all_feature_coords[:self.obs_size]
-        output_feature_coors = all_feature_coords[self.obs_size:]
+        all_feature_coors = self.pca.components_[:self.final_dims].T
 
-        # Augment coordinates with the layering dimension
-        # Create a column of zeros for the input layer (layer 0)
-        input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
-        # Create a column with depth value (hidden_depth + 1) for output layer
-        output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.output_depth)
-
-        # Horizontally stack the feature coordinates with the new layer dimension
-        input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
-        output_coors_full = np.hstack([output_feature_coors, output_layer_dim])
-
-        if self.width_factor != 1.0:
-            print(f"Applying width factor: {self.width_factor}")
-            input_coors_full[:, :-1] *= self.width_factor
-            output_coors_full[:, :-1] *= self.width_factor
-
-        # The total coordinate size is now PCA dims + 1
-        final_coord_size = self.final_dims + 1
-        print(f"Added layering dimension. Final coordinate size: {final_coord_size}")
-
-        # Convert to list of tuples for compatibility
-        input_coors_list = [tuple(row) for row in input_coors_full]
-        input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node
-
-        output_coors_list = [tuple(row) for row in output_coors_full]
+        input_coors_list, output_coors_list = process_coordinates(
+            all_feature_coors=all_feature_coors,
+            normalize_coors=self.normalize_coors,
+            width_factor=self.width_factor,
+            obs_size=self.obs_size,
+            output_depth=self.output_depth,
+            feature_dims=self.final_dims,
+        )
         
         return input_coors_list, output_coors_list
 
