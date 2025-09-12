@@ -9,7 +9,7 @@ class FactorAnalyzer:
     Handles Factor Analysis of environment data to determine substrate coordinates.
     It serves as an alternative to the PCAanalyzer.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, width_factor=1.0, normalize_coors=True):
+    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -21,6 +21,7 @@ class FactorAnalyzer:
         self.width_factor = width_factor
         self.normalize_coors = normalize_coors
         self.fa = None
+        self.depth_factor = depth_factor
 
     def generate_io_coordinates(self):
         """
@@ -51,7 +52,7 @@ class FactorAnalyzer:
             normalize_coors=self.normalize_coors,
             width_factor=self.width_factor,
             obs_size=self.obs_size,
-            output_depth=self.output_depth,
+            depth_factor=self.depth_factor,
             feature_dims=self.feature_dims,
         )
         

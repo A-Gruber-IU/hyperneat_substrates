@@ -8,7 +8,7 @@ class PCAanalyzer:
     """
     Handles PCA analysis of environment data to determine substrate coordinates which express highest variance.
     """
-    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth, width_factor=1.0, normalize_coors=True):
+    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -21,6 +21,7 @@ class PCAanalyzer:
         self.normalize_coors = normalize_coors
         self.pca = None
         self.final_dims = None
+        self.depth_factor = depth_factor
 
     def generate_io_coordinates(self):
         """
@@ -58,7 +59,7 @@ class PCAanalyzer:
             normalize_coors=self.normalize_coors,
             width_factor=self.width_factor,
             obs_size=self.obs_size,
-            output_depth=self.output_depth,
+            depth_factor=self.depth_factor,
             feature_dims=self.final_dims,
         )
         

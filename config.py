@@ -31,14 +31,15 @@ config = {
     "evolution": {
         "generation_limit": 400,
         "fitness_target": 10000.0,
-        "pop_size": 600,
-        "species_size": 15,
+        "pop_size": 600, # note at 16GB VRAM: 1000 for hidden_depth = 1, 600 for hidden_depth = 2, 300 for hidden_depth = 3 with max 6 dimensions
+        "species_size": 20,
     },
     # SUBSTRATE & HYPERNEAT CONFIGURATION
     "substrate": {
         "hidden_layer_type": "shift",
-        "hidden_depth": 2,
-        "width_factor": 1,
+        "hidden_depth": 2, # number of hidden layers
+        "depth_factor": 1, # factor which "stretches" the coordinates into depth direction
+        "width_factor": 1, # factor which "stretches" the coordinates in all directions, except depth
         "weight_threshold": 0.1,
         "recurrent_activations": 25,
     },

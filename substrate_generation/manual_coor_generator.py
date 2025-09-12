@@ -1,10 +1,9 @@
 import numpy as np
 
-class ManualInputMapper:
+class ManualIOMapper:
 
     @staticmethod
-    def get_all_manual_mappings(hidden_depth):
-        output_depth = hidden_depth + 1
+    def get_all_manual_mappings(depth_factor):
         manual_mappings = {
             "ant": {
                 "input": { # first draft, not including full obs space
@@ -26,14 +25,14 @@ class ManualInputMapper:
                     # not specificially included for torso: [(1.0, [0, 1, 2, 3, 4, 13, 14, 15, 16, 17, 18])],
                 },
                 "output": [
-                    (0, 0, 0, 0, 0, 0, 0, 1, -1, 1, 1, output_depth), # torque back right hip
-                    (0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1, output_depth), # torque back right ankle 
-                    (0, 0, 0, 0, 0, 0, 0, -1, 1, 1, 1, output_depth), # torque front left hip 
-                    (0, 0, 0, 0, 0, 0, 0, -1, 1, -1, 1, output_depth), # torque front left ankle 
-                    (0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, output_depth), # torque front right hip
-                    (0, 0, 0, 0, 0, 0, 0, 1, 1, -1, 1, output_depth), # torque front right ankle
-                    (0, 0, 0, 0, 0, 0, 0, -1, -1, 1, 1, output_depth), # torque back left hip 
-                    (0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, output_depth), # torque back left ankle  
+                    (0, 0, 0, 0, 0, 0, 0, 1, -1, 1, 1, depth_factor), # torque back right hip
+                    (0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1, depth_factor), # torque back right ankle 
+                    (0, 0, 0, 0, 0, 0, 0, -1, 1, 1, 1, depth_factor), # torque front left hip 
+                    (0, 0, 0, 0, 0, 0, 0, -1, 1, -1, 1, depth_factor), # torque front left ankle 
+                    (0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, depth_factor), # torque front right hip
+                    (0, 0, 0, 0, 0, 0, 0, 1, 1, -1, 1, depth_factor), # torque front right ankle
+                    (0, 0, 0, 0, 0, 0, 0, -1, -1, 1, 1, depth_factor), # torque back left hip 
+                    (0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, depth_factor), # torque back left ankle  
                 ]},
             "halfcheetah": {
                 "input": {
@@ -53,12 +52,12 @@ class ManualInputMapper:
                     # 7: layering direction
                 },
                 "output": [
-                    (-1, 1, 0, 0, 0, 1, output_depth), # torque back thigh rotor 
-                    (-1, 0, 0, 0, 0, 1, output_depth), # torque back shin rotor 
-                    (-1, -1, 0, 0, 0, 1, output_depth), # torque back foot rotor  
-                    (1, 1, 0, 0, 0, 1, output_depth), # torque front thigh rotor  
-                    (1, 0, 0, 0, 0, 1, output_depth), # torque front shin rotor 
-                    (1, -1, 0, 0, 0, 1, output_depth), # torque front foor rotor  
+                    (-1, 1, 0, 0, 0, 1, depth_factor), # torque back thigh rotor 
+                    (-1, 0, 0, 0, 0, 1, depth_factor), # torque back shin rotor 
+                    (-1, -1, 0, 0, 0, 1, depth_factor), # torque back foot rotor  
+                    (1, 1, 0, 0, 0, 1, depth_factor), # torque front thigh rotor  
+                    (1, 0, 0, 0, 0, 1, depth_factor), # torque front shin rotor 
+                    (1, -1, 0, 0, 0, 1, depth_factor), # torque front foor rotor  
                 ]},
             "swimmer":{
                 "input": {
@@ -73,8 +72,8 @@ class ManualInputMapper:
                     # 7: layering direction
                 },
                 "output": [
-                    (1, 0, 0, 0, 0, 0, 1, output_depth), # torque first rotor
-                    (-1, 0, 0, 0, 0, 0, 1, output_depth), # torque second rotor
+                    (1, 0, 0, 0, 0, 0, 1, depth_factor), # torque first rotor
+                    (-1, 0, 0, 0, 0, 0, 1, depth_factor), # torque second rotor
                 ]},
         }
         return manual_mappings
@@ -84,17 +83,16 @@ class ManualInputMapper:
                  obs_size, 
                  act_size, 
                  hidden_layer_type, 
-                 hidden_depth,
-                 width_factor
+                 width_factor,
+                 depth_factor
                 ):
         self.env_name = env_name
         self.obs_size = obs_size
         self.act_size = act_size
         self.hidden_layer_type = hidden_layer_type
-        self.hidden_depth = hidden_depth
         self.width_factor = width_factor # make substrate potentially equally wide and deep
-
-        all_manual_mappings = self.get_all_manual_mappings(self.hidden_depth)
+        self.depth_factor = depth_factor
+        all_manual_mappings = self.get_all_manual_mappings(self.depth_factor)
         self.mapping = all_manual_mappings.get(self.env_name, {})
         self.dim_mapping = self.mapping.get("input")
 
@@ -161,6 +159,6 @@ class ManualInputMapper:
         output_coors = []
         feature_dims = coord_size - 2
         for i in range(self.act_size):
-            coord = tuple([0] * feature_dims + [i + 1] + [self.hidden_depth + 1])
+            coord = tuple([0] * feature_dims + [i + 1] + [self.depth_factor])
             output_coors.append(coord)
         return output_coors

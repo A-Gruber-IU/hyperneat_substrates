@@ -8,7 +8,7 @@ class InvPCAanalyzer:
     """
     Handles inverse PCA analysis of environment data to determine substrate coordinates which express least variance.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, seed=None, width_factor=1.0, normalize_coors=True):
+    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, seed=None, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch...")
         self.data = data
@@ -18,6 +18,7 @@ class InvPCAanalyzer:
         self.output_depth = hidden_depth + 1
         self.seed = seed
         self.width_factor = width_factor
+        self.depth_factor = depth_factor
         self.normalize_coors = normalize_coors
         self.pca = None
         self.final_dims_indices = None # Renamed for clarity
@@ -44,7 +45,7 @@ class InvPCAanalyzer:
             normalize_coors=self.normalize_coors,
             width_factor=self.width_factor,
             obs_size=self.obs_size,
-            output_depth=self.output_depth,
+            depth_factor=self.depth_factor,
             feature_dims=self.feature_dims,
         )
         

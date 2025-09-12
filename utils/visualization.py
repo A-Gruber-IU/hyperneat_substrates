@@ -6,6 +6,7 @@ from matplotlib.colors import Normalize
 from matplotlib.cm import ScalarMappable
 import matplotlib.image as mpimg
 from IPython.display import SVG
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 def visualize_cppn(pipeline, state, save_path):
     # visualize cppn
@@ -21,7 +22,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
     best_genome = pipeline.best_genome
     print("Manually reconstructing the phenotype. A visual layout will be generated.")
 
-    # 1) Weights from CPPN (your existing logic)
+    # --- 1. Get Weights from CPPN ---
     neat_algorithm = pipeline.algorithm.neat
     cppn_params = neat_algorithm.transform(state, best_genome)
     query_coors = substrate.query_coors
@@ -34,228 +35,123 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
     all_substrate_connections = np.array(substrate.conns)
     all_substrate_weights_np = np.array(all_substrate_weights).squeeze()
 
-    # 2) Select edges: no percentile pruning; keep internal threshold (toggleable)
+    # --- 2. Filter Edges by Weight Threshold ---
     internal_weight_threshold = pipeline.algorithm.weight_threshold
     active_mask = np.abs(all_substrate_weights_np) > internal_weight_threshold
     active_conns = all_substrate_connections[active_mask]
     active_weights = all_substrate_weights_np[active_mask]
 
-    # If you want literally every potential connection regardless of threshold:
-    # active_conns = all_substrate_connections
-    # active_weights = all_substrate_weights_np
-
     print(f"Substrate has {len(all_substrate_connections)} potential connections.")
 
-    # Build graph, assign layers, generate layout
+    # --- 3. Build Graph and Assign Layers (Simplified) ---
     G_to_draw = nx.DiGraph()
-    all_node_keys = [int(n[0]) for n in substrate.nodes]
-
-
-    # Which coordinate dimension encodes "layer"? In your code it's the last one.
-    LAYER_AXIS = -1  # last coordinate
-
-    def compute_hidden_layer_groups(hidden_coors, layer_axis=LAYER_AXIS):
-        """
-        Returns:
-        order_vals: sorted unique layer values (e.g., 3, 6, 9, ...)
-        idx_groups: list of lists; each inner list has indices of hidden nodes that belong to that layer
-        widths:     number of hidden nodes per layer (len of each group)
-        """
-        hc = np.asarray(hidden_coors)
-        if hc.ndim != 2:
-            raise ValueError(f"hidden_coors must be 2D (num_hidden, coord_dims); got shape {hc.shape}")
-
-        layer_vals = hc[:, layer_axis]
-        order_vals = np.unique(layer_vals)
-        idx_groups = [np.where(layer_vals == v)[0].tolist() for v in order_vals]
-        widths = [len(g) for g in idx_groups]
-        return widths
-
-    # Example usage:
-    hidden_widths = compute_hidden_layer_groups(hidden_coors, layer_axis=LAYER_AXIS)
-    # All node keys in substrate order (N,1) -> flatten to ints
     all_node_keys = [int(n[0]) for n in substrate.nodes]
 
     num_inputs  = len(input_coors)
     num_outputs = len(output_coors)
     num_hiddens = len(hidden_coors)
 
-    # Correct slicing for FullSubstrate:
     input_keys  = all_node_keys[:num_inputs]
     output_keys = all_node_keys[num_inputs : num_inputs + num_outputs]
-    hidden_keys = all_node_keys[num_inputs + num_outputs : num_inputs + num_outputs + num_hiddens]
+    hidden_keys = all_node_keys[num_inputs + num_outputs:]
 
-    # Add nodes to the graph with subsets (partitions) for visualization
-    G_to_draw = nx.DiGraph()
+    # Inputs are at layer 0
+    for key in input_keys:
+        G_to_draw.add_node(key, subset=0)
 
-    # Inputs at layer 0
-    for k in input_keys:
-        G_to_draw.add_node(k, subset=0)
+    # Simplified hidden layer logic (assumes all layers have the same width)
+    if hidden_depth > 0 and num_hiddens > 0:
+        hidden_width = num_hiddens // hidden_depth
+        if num_hiddens % hidden_depth != 0:
+            print(f"Warning: Number of hidden nodes ({num_hiddens}) is not evenly divisible by hidden_depth ({hidden_depth}). Visualization may be inaccurate.")
 
-    # Hidden layers (1..hidden_depth) — we map the *contiguous* hidden range to layers
-    start_hidden = num_inputs + num_outputs
+        for i in range(hidden_depth):
+            layer_subset_id = i + 1
+            start_index = i * hidden_width
+            end_index = start_index + hidden_width
+            layer_keys = hidden_keys[start_index:end_index]
+            for key in layer_keys:
+                G_to_draw.add_node(key, subset=layer_subset_id)
 
-    # If each hidden layer has the same width (classic case):
-    # hidden_width_full = len(input_coors)  # or len(hidden_coors)//hidden_depth
-    # But we will use the robust per-layer widths we computed above:
-    cum = 0
-    for j, w in enumerate(hidden_widths):
-        layer_id = j + 1
-        start = start_hidden + cum
-        end   = start + w
-        for i in range(start, min(end, len(all_node_keys))):
-            G_to_draw.add_node(all_node_keys[i], subset=layer_id)
-        cum += w
-
-    # Outputs at the final layer (after all hidden layers)
+    # Outputs are at the final layer
     output_layer_id = hidden_depth + 1
-    for k in output_keys:
-        G_to_draw.add_node(k, subset=output_layer_id)
+    for key in output_keys:
+        G_to_draw.add_node(key, subset=output_layer_id)
 
-
-    # Layout from the detailed layer assignment
+    # Generate the layout based on the 'subset' attribute
     pos = nx.multipartite_layout(G_to_draw, subset_key='subset')
 
-    # 4) Fixed-bounds grayscale mapping & robust edge extraction
-
-    # Helper: coerce bounds to floats (in case 0,0 was typed instead of 0.0)
-    def _to_float_bound(x, name):
-        if isinstance(x, (tuple, list, np.ndarray)):
-            if len(x) == 0:
-                raise ValueError(f"{name} is empty; set a valid float (e.g., 0.0).")
-            x = x[0]
-        try:
-            return float(x)
-        except Exception as e:
-            raise ValueError(
-                f"Could not convert {name}={x!r} to float. "
-                f"Use a scalar like 0.0 or 1.0. Original error: {e}"
-            )
-
-    LOWER = _to_float_bound(weight_lower_limit, "WEIGHT_LOWER_BOUND")
-    UPPER = _to_float_bound(weight_upper_limit, "WEIGHT_UPPER_BOUND")
-
-    # Your active_conns rows look like [src, dst, extra]; take first two columns
+    # --- 4. Process and Filter Edges for Drawing ---
     ac = np.asarray(active_conns)
-    if ac.ndim != 2 or ac.shape[1] < 2:
-        raise ValueError(f"Expected active_conns to have at least 2 columns; got shape {ac.shape}")
-
-    all_edges = [(int(row[0]), int(row[1])) for row in ac]
-    all_weights = np.asarray(active_weights)
-
-    # Create lists to hold the edges and weights that are not self-loops (those are filtered out, because they "bloat" the plot)
-    edges_to_add = []
-    active_weights_filtered = []
-    for edge, weight in zip(all_edges, all_weights):
-        if edge[0] != edge[1]:  # This condition checks if the edge is NOT a self-loop
-            edges_to_add.append(edge)
-            active_weights_filtered.append(weight)
-
-    # Convert back to a NumPy array for consistency
-    active_weights = np.array(active_weights_filtered)
+    if ac.size == 0:
+        edges_to_add = []
+        active_weights = np.array([])
+    else:
+        all_edges = [(int(row[0]), int(row[1])) for row in ac]
+        all_weights = np.asarray(active_weights)
+        edges_to_add = []
+        active_weights_filtered = []
+        for edge, weight in zip(all_edges, all_weights):
+            if edge[0] != edge[1]: # Filter out self-loops
+                edges_to_add.append(edge)
+                active_weights_filtered.append(weight)
+        active_weights = np.array(active_weights_filtered)
 
     print(f"Visualizing {len(active_weights)} connections. Excluded loops. Weight threshold: {internal_weight_threshold}")
-
-    # Add edges to graph
     G_to_draw.add_edges_from(edges_to_add)
 
-    # Magnitudes for color mapping (must align 1:1 with edges_to_add)
-    abs_w = np.abs(active_weights)
-    if len(abs_w) != len(edges_to_add):
-        raise ValueError(
-            f"Edge/weight mismatch: {len(edges_to_add)} edges vs {len(abs_w)} weights. "
-            "Ensure any filtering is applied identically to connections and weights."
-        )
-
-    # Node colors: inputs=blue, outputs=red, hidden=green
+    # --- 5. Prepare for Drawing (Colors, Weights, etc.) ---
     node_colors = []
     for node_key in G_to_draw.nodes():
-        if node_key in input_keys:
-            color = 'blue'
-        elif node_key in output_keys:
-            color = 'red'
-        else:
-            color = 'green'
+        if node_key in input_keys: color = 'blue'
+        elif node_key in output_keys: color = 'red'
+        else: color = 'green'
         node_colors.append(color)
 
-    # 5) Draw with separate colormaps for positive (Greys) and negative (Reds)
-
     fig, ax = plt.subplots(figsize=(12, 12))
-
+    
     weights = np.asarray(active_weights)
-    idx_all = np.arange(len(edges_to_add))
+    if weights.size > 0:
+        idx_all = np.arange(len(edges_to_add))
+        pos_idx = idx_all[weights > 0]
+        neg_idx = idx_all[weights < 0]
 
-    pos_idx = idx_all[weights > 0]
-    neg_idx = idx_all[weights < 0]
-    zero_idx = idx_all[weights == 0]  # optional
+        edges_pos = [edges_to_add[i] for i in pos_idx]
+        edges_neg = [edges_to_add[i] for i in neg_idx]
+        w_pos = weights[pos_idx]
+        w_neg_mag = -weights[neg_idx]
 
-    edges_pos = [edges_to_add[i] for i in pos_idx]
-    edges_neg = [edges_to_add[i] for i in neg_idx]
-    w_pos = weights[pos_idx]                # > 0
-    w_neg_mag = -weights[neg_idx]           # positive magnitudes for negative edges
+        eps = np.finfo(float).eps
+        widths_pos = 0.5 + 1.5 * np.clip(w_pos / max(weight_upper_limit, eps), 0.0, 1.0)
+        widths_neg = 0.5 + 1.5 * np.clip(w_neg_mag / max(-weight_lower_limit, eps), 0.0, 1.0)
+    else:
+        edges_pos, edges_neg, w_pos, w_neg_mag, widths_pos, widths_neg = [], [], [], [], [], []
 
-    # Edge widths scaled per side using fixed bounds
-    eps = np.finfo(float).eps  # protect against division by zero
+    # --- 6. Draw the Network ---
+    nx.draw_networkx_nodes(G_to_draw, pos=pos, node_color=node_colors, node_size=20, ax=ax)
 
-    widths_pos = 0.5 + 1.5 * np.clip(w_pos / max(UPPER, eps), 0.0, 1.0) if len(w_pos) else []
-    widths_neg = 0.5 + 1.5 * np.clip(w_neg_mag / max(-LOWER, eps), 0.0, 1.0) if len(w_neg_mag) else []
-
-    # Draw nodes once
-    nx.draw_networkx_nodes(
-        G_to_draw,
-        pos=pos,
-        node_color=node_colors,
-        node_size=20,
-        ax=ax
-    )
-
-    # Draw POSITIVE edges: Greys (white → black), mapped over [0, UPPER]
     if len(edges_pos):
         nx.draw_networkx_edges(
-            G_to_draw,
-            pos=pos,
-            edgelist=edges_pos,
-            edge_color=w_pos,             # raw positive weights
-            edge_cmap=plt.cm.Greys,
-            edge_vmin=0.0,
-            edge_vmax=float(UPPER),
-            width=widths_pos,
-            arrows=True,
-            arrowstyle='-|>',
-            arrowsize=4,
-            ax=ax
+            G_to_draw, pos=pos, edgelist=edges_pos, edge_color=w_pos,
+            edge_cmap=plt.cm.Greys, edge_vmin=0.0, edge_vmax=float(weight_upper_limit),
+            width=widths_pos, arrows=True, arrowstyle='-|>', arrowsize=4, ax=ax
         )
-
-    # Draw NEGATIVE edges: Reds (white → red), mapped over [0, |LOWER|] using magnitudes
     if len(edges_neg):
         nx.draw_networkx_edges(
-            G_to_draw,
-            pos=pos,
-            edgelist=edges_neg,
-            edge_color=w_neg_mag,         # magnitudes of negative weights
-            edge_cmap=plt.cm.Reds,
-            edge_vmin=0.0,
-            edge_vmax=float(-LOWER),
-            width=widths_neg,
-            arrows=True,
-            arrowstyle='-|>',
-            arrowsize=4,
-            ax=ax
+            G_to_draw, pos=pos, edgelist=edges_neg, edge_color=w_neg_mag,
+            edge_cmap=plt.cm.Reds, edge_vmin=0.0, edge_vmax=float(-weight_lower_limit),
+            width=widths_neg, arrows=True, arrowstyle='-|>', arrowsize=4, ax=ax
         )
 
-    # Colorbars
-    from matplotlib.colors import Normalize
-    from matplotlib.cm import ScalarMappable
-    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
-    ax.set_title(f"Substrate Network — Positives Greys, Negatives Reds (Bounds [{LOWER}, {UPPER}])")
+    # Add Titles and Colorbars
+    ax.set_title(f"Substrate Network — Positives Greys, Negatives Reds (Bounds [{weight_lower_limit}, {weight_upper_limit}])")
     fig.tight_layout()
-    fig.subplots_adjust(bottom=0.18) # Manually make space at the bottom for colorbars
+    fig.subplots_adjust(bottom=0.18)
 
     # Left: negative (Reds)
     if len(w_neg_mag):
         sm_neg = ScalarMappable(cmap=plt.cm.Reds,
-                                norm=Normalize(vmin=0.0, vmax=float(-LOWER)))
+                                norm=Normalize(vmin=0.0, vmax=float(-weight_lower_limit)))
         sm_neg.set_array([])
         cax_neg = inset_axes(
             ax, width="32%", height="3%", loc="lower left",
@@ -266,12 +162,12 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
         cbar_neg.set_label('Negative |weight|', labelpad=2)
         cbar_neg.ax.xaxis.set_label_position('bottom')
         cbar_neg.ax.xaxis.set_ticks_position('bottom')
-        cbar_neg.set_ticks([0, (-LOWER)/2, -LOWER])
+        cbar_neg.set_ticks([0, (-weight_lower_limit)/2, -weight_lower_limit])
 
     # Right: positive (Greys)
     if len(w_pos):
         sm_pos = ScalarMappable(cmap=plt.cm.Greys,
-                                norm=Normalize(vmin=0.0, vmax=float(UPPER)))
+                                norm=Normalize(vmin=0.0, vmax=float(weight_upper_limit)))
         sm_pos.set_array([])
         cax_pos = inset_axes(
             ax, width="32%", height="3%", loc="lower right",
@@ -282,7 +178,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
         cbar_pos.set_label('Positive weight', labelpad=2)
         cbar_pos.ax.xaxis.set_label_position('bottom')
         cbar_pos.ax.xaxis.set_ticks_position('bottom')
-        cbar_pos.set_ticks([0, UPPER/2, UPPER])
+        cbar_pos.set_ticks([0, weight_upper_limit/2, weight_upper_limit])
 
     out_path = f"{save_path}"
     fig.savefig(out_path, dpi=800)

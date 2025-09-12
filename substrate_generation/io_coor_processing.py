@@ -5,7 +5,7 @@ def process_coordinates(
         normalize_coors, 
         width_factor, 
         obs_size, 
-        output_depth, 
+        depth_factor, 
         feature_dims
     ):
     if normalize_coors:
@@ -37,7 +37,7 @@ def process_coordinates(
         # Create a column of zeros for the input layer (layer 0)
         input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
         # Create a column with depth value (hidden_depth + 1) for output layer
-        output_layer_dim = np.full((output_feature_coors.shape[0], 1), output_depth)
+        output_layer_dim = np.full((output_feature_coors.shape[0], 1), depth_factor)
 
         # Horizontally stack the feature coordinates with the new layer dimension
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
