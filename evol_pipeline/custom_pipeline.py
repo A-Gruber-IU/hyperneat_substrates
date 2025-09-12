@@ -224,8 +224,10 @@ class CustomPipeline(StatefulBaseClass):
             with open(os.path.join(self.save_dir, "log.txt"), "a") as f:
                 f.write(f"{generation},{max_f},{min_f},{mean_f},{std_f},{cost_time}\n")
 
+        compute_ms = cost_time * 1000
+
         print(
-            f"Generation: {generation}, Cost time: {cost_time * 1000:.2f}ms\n",
+            f"Generation: {generation}, Cost time: {compute_ms:.2f}ms\n",
             f"\tfitness: valid cnt: {len(valid_fitnesses)}, max: {max_f:.4f}, min: {min_f:.4f}, mean: {mean_f:.4f}, std: {std_f:.4f}\n",
         )
         log_dict = {
@@ -234,6 +236,7 @@ class CustomPipeline(StatefulBaseClass):
             "fitness_min": min_f,
             "fitness_mean": mean_f,
             "fitness_std": std_f,
+            "compute_ms": compute_ms
         }
         
         wandb.log(log_dict)
