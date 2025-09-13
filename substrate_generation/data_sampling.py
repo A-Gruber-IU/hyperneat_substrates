@@ -145,7 +145,12 @@ def collect_trained_agent_policy_data(
     init_state = pipeline.setup()
     trained_state, best_genome = pipeline.auto_run(state=init_state)
 
-    print("Finished: agent has been trained.")
+    sampled_data = sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_problem, num_steps)
+
+    return sampled_data
+
+
+def sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_problem, num_steps):
 
     # Collect data using the trained agent
     print(f"Collecting {num_steps} data points using the trained agent policy...")

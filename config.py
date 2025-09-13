@@ -38,8 +38,8 @@ config = {
     "substrate": {
         "hidden_layer_type": "shift",
         "hidden_depth": 2, # number of hidden layers
-        "depth_factor": 1, # factor which "stretches" the coordinates into depth direction
-        "width_factor": 1, # factor which "stretches" the coordinates in all directions, except depth
+        "depth_factor": 100, # factor which "stretches" the coordinates into depth direction
+        "width_factor": 100, # factor which "stretches" the coordinates in all directions, except depth
         "weight_threshold": 0.1,
         "recurrent_activations": 25,
     },
@@ -49,7 +49,7 @@ config = {
         "num_agents_to_sample": 2,
         # Config for the temporary sampling agent
         "trained_agent_sampling": {
-            "generation_limit": 15,
+            "generation_limit": 100,
             "pop_size": 1000,
             "species_size": 20,
             "hidden_depth": 1,
@@ -57,7 +57,7 @@ config = {
     },
     # DATA ANALYSIS
     "data_analysis": {
-        "variance_threshold": 0.65,
+        "variance_threshold": 0.55,
         "max_dims": lambda obs_size: int(obs_size/4),
         "sdl_alpha": 1.0,
         "sdl_max_iter": 2000,

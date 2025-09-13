@@ -27,7 +27,7 @@ class HiddenLayerGenerator:
                     new_coor[-1] = shift/non_input_layers
                     hidden_coors.append(tuple(new_coor))
 
-            if self.hidden_layer_type == "shift_two":
+            elif self.hidden_layer_type == "shift_two":
                 for coor in input_coors:
                     new_coor = list(coor)
                     new_coor[-1] = shift/non_input_layers
@@ -51,7 +51,7 @@ class HiddenLayerGenerator:
                     row_2[-1] = shift/non_input_layers
                     hidden_coors.append(tuple(row_2))
 
-            if self.hidden_layer_type == "two_hot":
+            elif self.hidden_layer_type == "two_hot":
                 for j in range(num_features):
                     row = [0.0] * coord_size
                     row[j] = 1.0
@@ -65,7 +65,7 @@ class HiddenLayerGenerator:
                         row[-1] = shift/non_input_layers
                         hidden_coors.append(tuple(row))
                         
-            else: # self.hidden_layer_type == "one_hot" as default
+            elif self.hidden_layer_type == "one_hot":
                 for j in range(num_features):
                     row = [0.0] * coord_size
                     row[j] = 1.0
