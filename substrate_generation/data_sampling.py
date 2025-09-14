@@ -83,9 +83,13 @@ def collect_trained_agent_policy_data(
     act_size = env_problem.output_shape[0]
     
     # Create the MLP Substrate
-    hidden_width_mlp = int(obs_size * 1.5)
-    mlp_layers = [obs_size+1] + [hidden_width_mlp] * training_config["hidden_depth"] + [act_size]
-    mlp_substrate = MLPSubstrate(layers=mlp_layers)
+    hidden_layer = [obs_size] * training_config["hidden_depth"]
+    input_layer = [obs_size+1]
+    output_layer = [act_size]
+    mlp_layers = input_layer + hidden_layer + output_layer
+    mlp_depth = int(training_config["depth_factor"])
+    half_mlp_width = int(training_config["width_factor"]/2)
+    mlp_substrate = MLPSubstrate(layers=mlp_layers, coor_range=(-half_mlp_width, half_mlp_width, 0, mlp_depth))
     query_dim = int(mlp_substrate.query_coors.shape[1])
     print("Query dimension for sampling: ", query_dim)
 

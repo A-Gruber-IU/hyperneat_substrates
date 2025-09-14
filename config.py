@@ -57,7 +57,7 @@ config = {
     },
     # DATA ANALYSIS
     "data_analysis": {
-        "variance_threshold": 0.55,
+        "variance_threshold": 0.60,
         "max_dims": lambda obs_size: int(obs_size/4),
         "sdl_alpha": 1.0,
         "sdl_max_iter": 2000,
@@ -100,3 +100,5 @@ config['environment']['brax_args'] = config['environment']['args_sets'].get(env_
 config['data_sampling']['trained_agent_sampling']['env_args'] = config['environment']['brax_args']
 config['data_sampling']['trained_agent_sampling']['weight_threshold'] = config['substrate']['weight_threshold']
 config['data_sampling']['trained_agent_sampling']['fitness_target'] = config['evolution']['fitness_target']
+config['data_sampling']['trained_agent_sampling']['width_factor'] = config['substrate']['width_factor']
+config['data_sampling']['trained_agent_sampling']['depth_factor'] = config['substrate']['depth_factor']
