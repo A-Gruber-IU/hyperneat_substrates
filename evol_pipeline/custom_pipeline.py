@@ -236,7 +236,8 @@ class CustomPipeline(StatefulBaseClass):
             "fitness_min": min_f,
             "fitness_mean": mean_f,
             "fitness_std": std_f,
-            "compute_ms": compute_ms
+            "compute_ms": compute_ms,
+            "compute_ms_pop": compute_ms/self.pop_size,
         }
         
         wandb.log(log_dict)
@@ -245,7 +246,7 @@ class CustomPipeline(StatefulBaseClass):
 
         if self.show_problem_details:
             pop_transformed = self.compiled_pop_transform_func(
-                state, pop #using previous pop instead of requesting the new one from state here
+                state, pop # using previous pop instead of requesting the new one from state here
             )
             self.problem.show_details(
                 state, state.randkey, self.algorithm.forward, pop_transformed

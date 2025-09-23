@@ -8,14 +8,14 @@ class PCAanalyzer:
     """
     Handles PCA analysis of environment data to determine substrate coordinates which express highest variance.
     """
-    def __init__(self, data, obs_size, act_size, variance_threshold, max_dims, hidden_depth, width_factor=1.0, normalize_coors=True, depth_factor=1):
+    def __init__(self, data, obs_size, act_size, variance_threshold, feature_dims, hidden_depth, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
         self.obs_size = obs_size
         self.act_size = act_size
         self.variance_threshold = variance_threshold
-        self.max_dims = max_dims
+        self.max_feature_dims = feature_dims
         self.output_depth = hidden_depth + 1
         self.width_factor = width_factor
         self.normalize_coors = normalize_coors
@@ -30,7 +30,7 @@ class PCAanalyzer:
         """
         print(
             f"Running PCA to find feature dimensions covering {self.variance_threshold*100:.1f}% of variance "
-            f"(with a hard limit of {self.max_dims} dimensions)..."
+            f"(with a hard limit of {self.max_feature_dims} dimensions)..."
         )
         
         # Standardize and fit PCA to find the feature dimensions
@@ -42,7 +42,7 @@ class PCAanalyzer:
         # Determine the number of feature dimensions
         cumulative_variance = np.cumsum(self.pca.explained_variance_ratio_)
         dims_for_variance = np.argmax(cumulative_variance >= self.variance_threshold) + 1
-        self.final_dims = min(dims_for_variance, self.max_dims)
+        self.final_dims = min(dims_for_variance, self.max_feature_dims)
 
         print(
             f"PCA found {dims_for_variance} dimensions needed for {self.variance_threshold*100:.1f}% variance."

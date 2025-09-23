@@ -2,12 +2,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from config import config
+from evol_pipeline.evol_algorithm import create_evol_algorithm
 from tensorneat import Pipeline
-from tensorneat.algorithm.neat import NEAT
 from tensorneat.algorithm.hyperneat import HyperNEATFeedForward, MLPSubstrate
-from tensorneat.genome import DefaultGenome
-from tensorneat.genome.operations import DefaultMutation
-from tensorneat.genome.gene import DefaultConn
 from tensorneat.common import ACT
 
 
@@ -67,7 +64,6 @@ def collect_trained_agent_policy_data(
     env_problem,
     key,
     num_steps: int,
-    training_config: dict
 ) -> np.ndarray:
     """
     Fully encapsulates the process of training a temporary agent with
@@ -81,60 +77,19 @@ def collect_trained_agent_policy_data(
     # Unpack config and setup environment parameters
     obs_size = env_problem.input_shape[0]
     act_size = env_problem.output_shape[0]
-    
+
     # Create the MLP Substrate
-    hidden_layer = [obs_size] * training_config["hidden_depth"]
+    hidden_layer = [obs_size] * config["data_sampling"]["trained_agent_sampling"]["hidden_depth"]
     input_layer = [obs_size+1]
     output_layer = [act_size]
     mlp_layers = input_layer + hidden_layer + output_layer
-    mlp_depth = int(training_config["depth_factor"])
-    half_mlp_width = int(training_config["width_factor"]/2)
+    mlp_depth = int(config["substrate"]["depth_factor"])
+    half_mlp_width = max(int(config["substrate"]["width_factor"]/2), 1)
     mlp_substrate = MLPSubstrate(layers=mlp_layers, coor_range=(-half_mlp_width, half_mlp_width, 0, mlp_depth))
     query_dim = int(mlp_substrate.query_coors.shape[1])
     print("Query dimension for sampling: ", query_dim)
 
-    algo_params = config["algorithm"] # for convenience
-
-    # Create the NEAT components from the config
-    conn_gene = DefaultConn(
-        weight_mutate_power=algo_params["conn_weight_mutate_power"],
-        weight_mutate_rate=algo_params["conn_weight_mutate_rate"],
-        weight_lower_bound=algo_params["conn_weight_lower_bound"],
-        weight_upper_bound=algo_params["conn_weight_upper_bound"],
-    )
-
-    genome=DefaultGenome(
-        num_inputs=query_dim, 
-        num_outputs=1,
-        output_transform=algo_params["cppn_output_activation"],
-        max_nodes=algo_params["cppn_max_nodes"],
-        max_conns=algo_params["cppn_max_conns"],
-        init_hidden_layers=algo_params["cppn_init_hidden_layers"](query_dim),
-        mutation=DefaultMutation(
-            node_add=algo_params["node_add_prob"], conn_add=algo_params["conn_add_prob"], 
-            node_delete=algo_params["node_delete_prob"], conn_delete=algo_params["conn_delete_prob"],
-        ),
-        conn_gene=conn_gene,
-    )
-
-    neat_algorithm = NEAT(
-        pop_size=training_config["pop_size"], 
-        species_size=training_config["species_size"],
-        survival_threshold=algo_params["survival_threshold"],
-        compatibility_threshold=algo_params["compatibility_threshold"],
-        species_fitness_func=algo_params["species_fitness_func"],
-        genome_elitism=algo_params["genome_elitism"],
-        species_elitism=algo_params["species_elitism"],
-        genome=genome,
-    )
-
-    evol_algorithm_mlp = HyperNEATFeedForward(
-        substrate=mlp_substrate, 
-        neat=neat_algorithm, 
-        activation=algo_params["activation_function"],
-        output_transform=algo_params["output_activation"],
-        weight_threshold=config["substrate"]["weight_threshold"],
-    )
+    evol_algorithm_mlp = create_evol_algorithm(mlp_substrate, sampling=True)
 
     # Setup and run the training pipeline
     key, pipeline_key = jax.random.split(key)
@@ -142,8 +97,8 @@ def collect_trained_agent_policy_data(
         algorithm=evol_algorithm_mlp,
         problem=env_problem,
         seed=int(pipeline_key[1]), # Uses part of the key for a deterministic seed
-        generation_limit=training_config["generation_limit"],
-        fitness_target=config["evolution"]["fitness_target"],
+        generation_limit=config["data_sampling"]["trained_agent_sampling"]["generation_limit"],
+        fitness_target=config["pipeline"]["fitness_target"],
     )
     
     init_state = pipeline.setup()

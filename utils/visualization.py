@@ -17,7 +17,10 @@ def visualize_cppn(pipeline, state, save_path):
     cppn_genome.visualize(cppn_network, save_path=save_path)
     SVG(filename=save_path)
 
-def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coors, output_coors, hidden_depth, weight_lower_limit, weight_upper_limit):
+def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coors, output_coors, hidden_depth, max_weight):
+
+    weight_lower_limit = -max_weight
+    weight_upper_limit = max_weight
 
     best_genome = pipeline.best_genome
     print("Manually reconstructing the phenotype. A visual layout will be generated.")

@@ -9,14 +9,14 @@ class SparseDictionaryAnalyzer:
     Applies Sparse Dictionary Learning (SDL) to environment data to determine
     substrate coordinates.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, alpha=1.0, max_iter=1000, width_factor=1.0, normalize_coors=True, depth_factor=1):
+    def __init__(self, data, obs_size, act_size, feature_dims, hidden_depth, alpha=1.0, max_iter=1000, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
         self.obs_size = obs_size
         self.act_size = act_size
         # The number of dictionary "atoms" to learn.
-        self.feature_dims = max_dims
+        self.feature_dims = feature_dims
         # The regularization parameter that encourages sparsity.
         self.alpha = alpha
         self.max_iter = max_iter

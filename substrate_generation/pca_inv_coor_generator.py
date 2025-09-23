@@ -8,13 +8,13 @@ class InvPCAanalyzer:
     """
     Handles inverse PCA analysis of environment data to determine substrate coordinates which express least variance.
     """
-    def __init__(self, data, obs_size, act_size, max_dims, hidden_depth, seed=None, width_factor=1.0, normalize_coors=True, depth_factor=1):
+    def __init__(self, data, obs_size, act_size, feature_dims, hidden_depth, seed=None, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch...")
         self.data = data
         self.obs_size = obs_size
         self.act_size = act_size
-        self.feature_dims = max_dims
+        self.feature_dims = feature_dims
         self.output_depth = hidden_depth + 1
         self.seed = seed
         self.width_factor = width_factor
@@ -34,7 +34,7 @@ class InvPCAanalyzer:
         self.pca = PCA(random_state=self.seed)
         self.pca.fit(scaled_data)
 
-        # Here is the distinction from the regular PCA class: variances are sorted and smallest values up to max_dims setting are selected
+        # Here is the distinction from the regular PCA class: variances are sorted and smallest values up to feature_dims setting are selected
         sorted_indices = np.argsort(self.pca.explained_variance_ratio_)
         self.final_dims_indices = sorted_indices[:self.feature_dims]
 
@@ -134,7 +134,7 @@ class InvPCAanalyzer:
         cbar = fig.colorbar(im, ax=ax, orientation='horizontal', pad=0.08)
         cbar.set_label("Component Loading", weight='bold')
 
-        # --- FIX 4: Use max_dims for ranges and the indices for labels ---
+        # Use feature_dims for ranges and the indices for labels
         ax.set_xticks(np.arange(self.feature_dims))
         # Label with the *actual* PC index for better interpretability
         xtick_labels = [f"PC {i+1}" for i in self.final_dims_indices]
@@ -144,7 +144,7 @@ class InvPCAanalyzer:
         ax.set_yticks(np.arange(self.obs_size + self.act_size))
         
         ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')
-        # Use max_dims for text placement
+        # Use feature_dims for text placement
         ax.text(self.feature_dims, self.obs_size / 2, 'Sensors', ha='center', va='center', rotation=-90, color='white', weight='bold')
         ax.text(self.feature_dims, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center', rotation=-90, color='white', weight='bold')
         
