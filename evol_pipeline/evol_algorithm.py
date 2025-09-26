@@ -15,19 +15,34 @@ def create_evol_algorithm(substrate, sampling = False):
     conn_gene = DefaultConn(
         weight_mutate_power=algo_params["conn_gene"]["conn_weight_mutate_power"],
         weight_mutate_rate=algo_params["conn_gene"]["conn_weight_mutate_rate"],
+        weight_replace_rate=algo_params["conn_gene"]["weight_replace_rate"],
         weight_lower_bound=algo_params["conn_gene"]["conn_weight_lower_bound"],
         weight_upper_bound=algo_params["conn_gene"]["conn_weight_upper_bound"],
+        weight_init_mean=algo_params["conn_gene"]["weight_init_mean"],
+        weight_init_std=algo_params["conn_gene"]["weight_init_std"],
     )
 
     node_gene=DefaultNode(
-        bias_init_std=0.1,
-        bias_mutate_power=0.05,
-        bias_mutate_rate=0.01,
-        bias_replace_rate=0.0,
-        activation_options=algo_params["node_gene"]["node_activation_function_options"],
-        activation_default=algo_params["node_gene"]["node_activation_default"],
-        aggregation_options=algo_params["node_gene"]["node_aggregation_options"],
-        aggregation_default=algo_params["node_gene"]["node_aggregation_default"],
+        bias_init_mean=algo_params["node_gene"]["bias_init_mean"],
+        bias_init_std=algo_params["node_gene"]["bias_init_std"],
+        bias_mutate_power=algo_params["node_gene"]["bias_mutate_power"],
+        bias_mutate_rate=algo_params["node_gene"]["bias_mutate_rate"],
+        bias_replace_rate=algo_params["node_gene"]["bias_replace_rate"],
+        bias_lower_bound=algo_params["node_gene"]["bias_lower_bound"],
+        bias_upper_bound=algo_params["node_gene"]["bias_upper_bound"],
+        activation_options=algo_params["node_gene"]["activation_function_options"],
+        activation_default=algo_params["node_gene"]["activation_default"],
+        activation_replace_rate=algo_params["node_gene"]["activation_replace_rate"],
+        aggregation_options=algo_params["node_gene"]["aggregation_options"],
+        aggregation_default=algo_params["node_gene"]["aggregation_default"],
+        aggregation_replace_rate=algo_params["node_gene"]["aggregation_replace_rate"],
+        response_init_mean=algo_params["node_gene"]["response_init_mean"],
+        response_init_std=algo_params["node_gene"]["response_init_std"],
+        response_lower_bound=algo_params["node_gene"]["response_lower_bound"],
+        response_upper_bound=algo_params["node_gene"]["response_upper_bound"],
+        response_replace_rate=algo_params["node_gene"]["response_replace_rate"],
+        response_mutate_power=algo_params["node_gene"]["response_mutate_power"],
+        response_mutate_rate=algo_params["node_gene"]["response_mutate_rate"],
     )
 
     mutation=DefaultMutation(
@@ -40,6 +55,7 @@ def create_evol_algorithm(substrate, sampling = False):
     genome=DefaultGenome(
         num_inputs=query_dim, 
         num_outputs=1,
+        input_transform=None,
         output_transform=algo_params["genome"]["cppn_output_activation"],
         max_nodes=algo_params["genome"]["cppn_max_nodes"],
         max_conns=algo_params["genome"]["cppn_max_conns"],
@@ -60,6 +76,7 @@ def create_evol_algorithm(substrate, sampling = False):
         species_elitism=algo_params["neat"]["species_elitism"],
         genome=genome,
         species_number_calculate_by=algo_params["neat"]["species_number_calculate_by"],
+        max_stagnation=algo_params["neat"]["max_stagnation"]
     )
 
     evol_algorithm = HyperNEAT(

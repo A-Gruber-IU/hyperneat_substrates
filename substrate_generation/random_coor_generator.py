@@ -102,4 +102,4 @@ class RandomCoordinateGenerator:
         output_coors_list = [tuple(row) for row in output_coors_full]
         
         # Return coord_size for a consistent interface with other analyzers
-        return input_coors_list, output_coors_list, final_coord_size
+        return input_coors_list, output_coors_list
