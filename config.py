@@ -69,7 +69,7 @@ config = {
     # SUBSTRATE & HYPERNEAT CONFIGURATION
     "substrate": {
         "hidden_layer_type": "shift", # one_hot | one_double_hot | two_hot | shift | shift_two_in | shift_three_in | shift_two_out | shift_three_out 
-        "hidden_depth": 2, # number of hidden layers
+        "hidden_depth": 1, # number of hidden layers
         "depth_factor": 1, # factor which "stretches" the coordinates into depth direction
         "width_factor": 1, # factor which "stretches" the coordinates in all directions, except depth
     },
@@ -119,7 +119,7 @@ config = {
             "cppn_init_hidden_layers": lambda query_dim: initial_cppn_layers_flat(query_dim=query_dim),
         },
         "neat": {
-            "pop_size": 4000, # note at 16GB VRAM for default network with "shift": 1400 for hidden_depth = 1, 700 for hidden_depth = 2, 350 for hidden_depth = 3
+            "pop_size": 2500, # note at 16GB VRAM for default network with "shift": 1400 for hidden_depth = 1, 700 for hidden_depth = 2, 350 for hidden_depth = 3
             "genome_elitism": 3, # 3 | 5
             "species_elitism": 5, # 5 for 20,50 | 20 for 100
             "species_size": 50, # 50 | 100 
