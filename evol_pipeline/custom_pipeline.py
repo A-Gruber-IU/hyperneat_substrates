@@ -224,6 +224,11 @@ class CustomPipeline(StatefulBaseClass):
             with open(os.path.join(self.save_dir, "log.txt"), "a") as f:
                 f.write(f"{generation},{max_f},{min_f},{mean_f},{std_f},{cost_time}\n")
 
+        # state = self.algorithm.tell(state=state, fitness=fitnesses)
+        member_count = jax.device_get(state.species.member_count)
+        species_sizes = [int(i) for i in member_count if i > 0]
+        num_species = len(species_sizes)
+
         compute_ms = cost_time * 1000
 
         print(
@@ -238,6 +243,7 @@ class CustomPipeline(StatefulBaseClass):
             "fitness_std": std_f,
             "compute_ms": compute_ms,
             "compute_ms_pop": compute_ms/self.pop_size,
+            "num_species": num_species,
         }
         
         wandb.log(log_dict)

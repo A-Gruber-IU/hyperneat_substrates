@@ -34,8 +34,9 @@ def process_coordinates(
     output_feature_coors = all_feature_coors[obs_size:]
 
     # Augment coordinates with the layering dimension
-    # Create a column of zeros for the input layer (layer 0)
-    input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
+    # Create a column of -1 for the input layer
+    # input_layer_dim = np.full((input_feature_coors.shape[0], 1), -depth_factor) # normalization -1 to 1
+    input_layer_dim = np.zeros((input_feature_coors.shape[0], 1)) # normalization 0 to 1
     # Create a column with depth value for output layer
     output_layer_dim = np.full((output_feature_coors.shape[0], 1), depth_factor)
 
@@ -54,8 +55,9 @@ def process_coordinates(
 
     # Convert to list of tuples for compatibility
     input_coors_list = [tuple(row) for row in input_coors_full]
-    input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node
-    
+    # input_coors_list.append(tuple([0.0] * feature_dims + [-depth_factor])) # bias node for normalization -1 to 1
+    input_coors_list.append(tuple([0.0] * final_coord_size)) # bias node for normalization 0 to 1
+
     output_coors_list = [tuple(row) for row in output_coors_full]
 
     return input_coors_list, output_coors_list

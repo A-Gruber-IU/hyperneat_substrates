@@ -79,7 +79,7 @@ class RandomCoordinateGenerator:
         output_feature_coors = np.array(output_feature_coors_list, dtype=float)
 
         # Augment coordinates with the layering dimension
-        input_layer_dim = np.zeros((input_feature_coors.shape[0], 1))
+        input_layer_dim = np.full((input_feature_coors.shape[0], 1), -self.depth_factor)
         output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.depth_factor)
         
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
@@ -97,7 +97,8 @@ class RandomCoordinateGenerator:
 
         # Convert to list of tuples and add the bias node
         input_coors_list = [tuple(row) for row in input_coors_full]
-        input_coors_list.append(tuple([0.0] * final_coord_size))
+        # input_coors_list.append(tuple([0.0] * self.feature_dims + [-self.depth_factor])) # normalization -1 to 1
+        input_coors_list.append(tuple([0.0] * final_coord_size)) # normalization 0 to 1
         
         output_coors_list = [tuple(row) for row in output_coors_full]
         

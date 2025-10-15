@@ -38,7 +38,7 @@ class AutoLayeredCoordMLPSubstrate(DefaultSubstrate):
         Args:
             input_coors:   list/array of input coordinates, shape (N_in, D)
             hidden_coors:  flat list/array of hidden coordinates, shape (N_h, D)
-                           LAST DIMENSION encodes the layer id/value.
+                           last dimension encodes the layer id/value.
             output_coors:  list/array of output coordinates, shape (N_out, D)
             layer_tol:     tolerance to group last-dimension values into the same layer
                            (helps with floating-point noise).

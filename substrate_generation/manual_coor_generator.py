@@ -6,33 +6,31 @@ class ManualIOMapper:
     def get_all_manual_mappings(depth_factor):
         manual_mappings = {
             "ant": {
-                "input": { # first draft, not including full obs space
+                "input": { 
                     0: [(1.0, [1, 2, 3, 4])], # orientation
-                    1: [(1.0, [13, 14, 15])], # velocity
-                    2: [(1.0, [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])], # angular velocity
-                    3: [(1.0, [5, 6, 7, 8, 9, 10, 11, 12])], # angle
-                    4: [(1.0, [2, 13, 16])], # x
-                    5: [(1.0, [3, 14, 17])], # y
-                    6: [(1.0, [0, 4, 15, 18])], # z
-                    7: [(1.0, [7, 8, 11, 12, 21, 22, 25, 26]), # right side
+                    1: [(1.0, [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])], # velocity / angular velocity
+                    2: [(1.0, [5, 6, 7, 8, 9, 10, 11, 12, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])], # angle / angular velocity
+                    3: [(1.0, [2, 13, 16])], # x orientation / position
+                    4: [(1.0, [3, 14, 17])], # y orientation / position
+                    5: [(1.0, [0, 4, 15, 18])], # z orientation / position
+                    6: [(1.0, [7, 8, 11, 12, 21, 22, 25, 26]), # right side
                         (-1.0, [5, 6, 9, 10, 19, 20, 23, 24])], # left side
-                    8: [(1.0, [5, 6, 7, 8, 19, 20, 21, 22]), # front side
+                    7: [(1.0, [5, 6, 7, 8, 19, 20, 21, 22]), # front side
                         (-1.0, [9, 10, 11, 12, 23, 24, 25, 26])], # back side
-                    9: [(1.0, [5, 7, 9, 11, 19, 21, 23, 25]), # hip joints
+                    8: [(1.0, [5, 7, 9, 11, 19, 21, 23, 25]), # hip joints
                         (-1.0, [6, 8, 10, 12, 20, 22, 24, 26])], # ankle joints
-                    # 10: torque
-                    # 11: layering direction
+                    # 9: layering direction / torque
                     # not specificially included for torso: [(1.0, [0, 1, 2, 3, 4, 13, 14, 15, 16, 17, 18])],
                 },
                 "output": [
-                    (0, 0, 0, 0, 0, 0, 0, 1, -1, 1, 1, depth_factor), # torque back right hip
-                    (0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1, depth_factor), # torque back right ankle 
-                    (0, 0, 0, 0, 0, 0, 0, -1, 1, 1, 1, depth_factor), # torque front left hip 
-                    (0, 0, 0, 0, 0, 0, 0, -1, 1, -1, 1, depth_factor), # torque front left ankle 
-                    (0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, depth_factor), # torque front right hip
-                    (0, 0, 0, 0, 0, 0, 0, 1, 1, -1, 1, depth_factor), # torque front right ankle
-                    (0, 0, 0, 0, 0, 0, 0, -1, -1, 1, 1, depth_factor), # torque back left hip 
-                    (0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 1, depth_factor), # torque back left ankle  
+                    (0, 0, 0, 0, 0, 0, 1, -1, 1, depth_factor), # torque back right hip
+                    (0, 0, 0, 0, 0, 0, 1, -1, -1, depth_factor), # torque back right ankle 
+                    (0, 0, 0, 0, 0, 0, -1, 1, 1, depth_factor), # torque front left hip 
+                    (0, 0, 0, 0, 0, 0, -1, 1, -1, depth_factor), # torque front left ankle 
+                    (0, 0, 0, 0, 0, 0, 1, 1, 1, depth_factor), # torque front right hip
+                    (0, 0, 0, 0, 0, 0, 1, 1, -1, depth_factor), # torque front right ankle
+                    (0, 0, 0, 0, 0, 0, -1, -1, 1, depth_factor), # torque back left hip 
+                    (0, 0, 0, 0, 0, 0, -1, -1, -1, depth_factor), # torque back left ankle  
                 ]},
             "halfcheetah": {
                 "input": {
@@ -126,7 +124,8 @@ class ManualIOMapper:
             input_coors = [tuple(row) for row in input_coors_np]
             output_coors = [tuple(row) for row in output_coors_np]
         
-        input_coors.append(tuple([0.0] * self.coord_size)) # bias input
+        input_coors.append(tuple([0.0] * (self.coord_size-1) + [-self.depth_factor])) # bias input for normalization -1 to 1
+        # input_coors.append(tuple([0.0] * self.coord_size)) # bias input for normalization 0 to 1
         print(f"Number of input nodes (obs + bias): {len(input_coors)}")
 
         return input_coors, output_coors
@@ -135,6 +134,7 @@ class ManualIOMapper:
         obs_coors = []
         for node_index in range(self.obs_size):
             coord = [0.0] * self.coord_size
+            # coord[-1] = -self.depth_factor # normalization -1 to 1 (remove for normalization 0 to 1)
             for dim_idx, concepts in self.dim_mapping.items():
                 for value, nodes in concepts:
                     if node_index in nodes:
