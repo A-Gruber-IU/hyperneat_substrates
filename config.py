@@ -25,12 +25,12 @@ config = {
     "environment": {
         "backend": "mjx", # mjx | generalized | positional | spring --- mjx creates most physically plausible movements
         "max_step": 1000,
-        "repeat_times": 15, # 15|20 - stabilizes convergence, but impacts run time very significantly
+        "repeat_times": 10, # 10|15 - stabilizes convergence, but impacts run time very significantly
         "args_sets": {  # Specific reward/cost weights for each environment, use_contact_forces is not implemented
             "ant": {
-                "healthy_reward": 0.05, # default 1.0, 0.05 for mjx and spring
-                "ctrl_cost_weight": 0.05, # default 0.5, 0.05 for mjx, 0.5-0.8 for spring
-                "contact_cost_weight": 0.0005, # default 0.0005
+                "healthy_reward": 0.05, # 0.05 (default 1.0)
+                "ctrl_cost_weight": 0.5, # 0.05 for mjx and positional, 0.5-0.8 for spring (default 0.5)
+                "contact_cost_weight": 0.0005, # (default 0.0005)
             },
             "halfcheetah": { 
                 "forward_reward_weight": 2.0, 
@@ -44,19 +44,19 @@ config = {
     # DATA SAMPLING
     "data_sampling": {
         "sampling_steps": 10000,
-        "num_agents_to_sample": 1,
+        "num_agents_to_sample": 2,
         # Config for the temporary sampling agent
         "trained_agent_sampling": {
-            "generation_limit": 100,
+            "generation_limit": 50,
             "pop_size": 1000,
-            "species_size": 20,
+            "species_size": 10,
             "hidden_depth": 1,
         }
     },
     # DATA ANALYSIS
     "data_analysis": {
-        "variance_threshold": 0.65,
-        "feature_dims": 7,
+        "variance_threshold": 1.0,
+        "feature_dims": [1,2,3,6,9,12,16],
         "sdl_alpha": 1.0,
         "sdl_max_iter": 2000,
         "normalize_coors": True,
@@ -119,23 +119,23 @@ config = {
             "cppn_init_hidden_layers": lambda query_dim: initial_cppn_layers_flat(query_dim=query_dim),
         },
         "neat": {
-            "pop_size": 2500, # note at 16GB VRAM for default network with "shift": 1400 for hidden_depth = 1, 700 for hidden_depth = 2, 350 for hidden_depth = 3
-            "genome_elitism": 3, # 3 | 5
-            "species_elitism": 5, # 5 for 20,50 | 20 for 100
-            "species_size": 50, # 50 | 100 
-            "min_species_size": 10,
-            "survival_threshold": 0.05, # 0.05 | 0.1
-            "compatibility_threshold": 1.0, # 0.75 for initial_cppn_layers_dynamic | 1.0 initial_cppn_layers_flat | 1.5 initial_cppn_layers_none
+            "pop_size": 3500, # 3000
+            "genome_elitism": 2, # 3|5
+            "species_elitism": 3, # 5
+            "species_size": 20, # 25|35|50 
+            "min_species_size": 10, # 5|10
+            "survival_threshold": 0.025, # 0.05 | 0.1
+            "compatibility_threshold": 0.75, # 0.75 for initial_cppn_layers_dynamic | 1.0 initial_cppn_layers_flat | 1.5 initial_cppn_layers_none
             "species_fitness_func": jnp.max, # jnp.max
             "species_number_calculate_by": "rank", # fitness | rank
-            "max_stagnation": 20, # 15|20
+            "max_stagnation": 15, # 15|20
         },
         "hyperneat": {
             "activation_function": ACT.tanh,
             "output_activation": ACT.tanh,
             "weight_threshold": 0.005, # 0.005 | 0.05
             "max_weight": 1, # 1.5 | 2.5
-            "recurrent_activations": 10, # 10
+            "recurrent_activations": 5, # 5|10
         },
     }
 }

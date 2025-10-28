@@ -8,7 +8,7 @@ class PCAanalyzer:
     """
     Handles PCA analysis of environment data to determine substrate coordinates which express highest variance.
     """
-    def __init__(self, data, obs_size, act_size, variance_threshold, feature_dims, hidden_depth, width_factor=1.0, normalize_coors=True, depth_factor=1):
+    def __init__(self, data, obs_size, act_size, variance_threshold, feature_dims, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch. Expected {obs_size + act_size} features, but got {data.shape[1]}.")
         self.data = data
@@ -16,7 +16,6 @@ class PCAanalyzer:
         self.act_size = act_size
         self.variance_threshold = variance_threshold
         self.max_feature_dims = feature_dims
-        self.output_depth = hidden_depth + 1
         self.width_factor = width_factor
         self.normalize_coors = normalize_coors
         self.pca = None
@@ -41,7 +40,11 @@ class PCAanalyzer:
 
         # Determine the number of feature dimensions
         cumulative_variance = np.cumsum(self.pca.explained_variance_ratio_)
-        dims_for_variance = np.argmax(cumulative_variance >= self.variance_threshold) + 1
+
+        if self.variance_threshold >= 1.0:
+            dims_for_variance = self.max_feature_dims
+        else:
+            dims_for_variance = np.argmax(cumulative_variance >= self.variance_threshold) + 1
         self.final_dims = min(dims_for_variance, self.max_feature_dims)
 
         print(
@@ -95,9 +98,6 @@ class PCAanalyzer:
             color='tab:red', marker='o', linestyle='-', label='Cumulative Explained Variance'
         )
         ax2.tick_params(axis='y', labelcolor='tab:red')
-
-        ax2.axhline(y=self.variance_threshold * 100, color='g', linestyle='--',
-                    label=f'{self.variance_threshold*100:.0f}% Variance Threshold')
         
         ax1.axvline(x=self.final_dims, color='purple', linestyle=':',
                     label=f'Selected Dimensions: {self.final_dims}')
@@ -116,7 +116,7 @@ class PCAanalyzer:
     def plot_principal_components(self, save_path: str):
         """
         Generates a heatmap of the principal component loadings, which represent
-        the feature coordinates. This provides a direct comparison to FA and SDL heatmaps.
+        the feature coordinates. This provides a direct comparison to FA and DL heatmaps.
         """
         if self.pca is None or self.final_dims is None:
             raise RuntimeError("You must call `generate_io_coordinates()` before calling this method.")
@@ -138,7 +138,7 @@ class PCAanalyzer:
         ax.set_xticks(np.arange(self.final_dims))
         ax.set_xticklabels([f"PC {i+1}" for i in range(self.final_dims)])
         
-        ax.set_ylabel("Original Nodes (Sensors & Motors)", weight='bold')
+        ax.set_ylabel("Nodes (Sensors & Motors)", weight='bold')
         ax.set_yticks(np.arange(self.obs_size + self.act_size))
         
         ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')

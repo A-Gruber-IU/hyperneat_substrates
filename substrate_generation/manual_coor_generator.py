@@ -10,9 +10,9 @@ class ManualIOMapper:
                     0: [(1.0, [1, 2, 3, 4])], # orientation
                     1: [(1.0, [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])], # velocity / angular velocity
                     2: [(1.0, [5, 6, 7, 8, 9, 10, 11, 12, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])], # angle / angular velocity
-                    3: [(1.0, [2, 13, 16])], # x orientation / position
-                    4: [(1.0, [3, 14, 17])], # y orientation / position
-                    5: [(1.0, [0, 4, 15, 18])], # z orientation / position
+                    3: [(1.0, [2, 13, 16])], # x direction (orientation / position)
+                    4: [(1.0, [3, 14, 17])], # y direction (orientation / position)
+                    5: [(1.0, [0, 4, 15, 18])], # z direction (orientation / position)
                     6: [(1.0, [7, 8, 11, 12, 21, 22, 25, 26]), # right side
                         (-1.0, [5, 6, 9, 10, 19, 20, 23, 24])], # left side
                     7: [(1.0, [5, 6, 7, 8, 19, 20, 21, 22]), # front side
@@ -46,16 +46,15 @@ class ManualIOMapper:
                         (0.0, [10])],  # velocity z
                     4: [(1.0, [0]), # position x
                         (0.0, [1])],  # position z
-                    # 6: torque
-                    # 7: layering direction
+                    # 5: layering direction
                 },
                 "output": [
-                    (-1, 1, 0, 0, 0, 1, depth_factor), # torque back thigh rotor 
-                    (-1, 0, 0, 0, 0, 1, depth_factor), # torque back shin rotor 
-                    (-1, -1, 0, 0, 0, 1, depth_factor), # torque back foot rotor  
-                    (1, 1, 0, 0, 0, 1, depth_factor), # torque front thigh rotor  
-                    (1, 0, 0, 0, 0, 1, depth_factor), # torque front shin rotor 
-                    (1, -1, 0, 0, 0, 1, depth_factor), # torque front foor rotor  
+                    (-1, 1, 0, 0, 0, depth_factor), # torque back thigh rotor 
+                    (-1, 0, 0, 0, 0, depth_factor), # torque back shin rotor 
+                    (-1, -1, 0, 0, 0, depth_factor), # torque back foot rotor  
+                    (1, 1, 0, 0, 0, depth_factor), # torque front thigh rotor  
+                    (1, 0, 0, 0, 0, depth_factor), # torque front shin rotor 
+                    (1, -1, 0, 0, 0, depth_factor), # torque front foor rotor  
                 ]},
             "swimmer":{
                 "input": {
@@ -66,12 +65,11 @@ class ManualIOMapper:
                     3: [(1.0, [4])], # velocity y
                     4: [(1.0, [0, 1, 2])], # angle
                     5: [(1.0, [5, 6, 7])], # angular velocity
-                    # 6: torque
-                    # 7: layering direction
+                    # 6: layering direction
                 },
                 "output": [
-                    (1, 0, 0, 0, 0, 0, 1, depth_factor), # torque first rotor
-                    (-1, 0, 0, 0, 0, 0, 1, depth_factor), # torque second rotor
+                    (1, 0, 0, 0, 0, 0, depth_factor), # torque first rotor
+                    (-1, 0, 0, 0, 0, 0, depth_factor), # torque second rotor
                 ]},
         }
         return manual_mappings
@@ -105,7 +103,7 @@ class ManualIOMapper:
         self.base_feature_width = max(self.dim_mapping.keys()) + 1
         print(f"Number of feature dimensions: {self.base_feature_width}")
         
-        self.coord_size = self.base_feature_width + 2 # Features + 2 Special Dims
+        self.coord_size = self.base_feature_width + 1 # Features + Layering Dimension
         print(f"Total number after adding output and layering dimensions (coord_size): {self.coord_size}")
 
     def generate_io_coordinates(self):
@@ -124,11 +122,11 @@ class ManualIOMapper:
             input_coors = [tuple(row) for row in input_coors_np]
             output_coors = [tuple(row) for row in output_coors_np]
         
-        input_coors.append(tuple([0.0] * (self.coord_size-1) + [-self.depth_factor])) # bias input for normalization -1 to 1
+        input_coors.append(tuple([0.0] * (self.base_feature_width) + [-self.depth_factor])) # bias input for normalization -1 to 1
         # input_coors.append(tuple([0.0] * self.coord_size)) # bias input for normalization 0 to 1
         print(f"Number of input nodes (obs + bias): {len(input_coors)}")
 
-        return input_coors, output_coors
+        return input_coors, output_coors, self.base_feature_width
 
     def _generate_obs_coordinates(self):
         obs_coors = []
@@ -157,7 +155,7 @@ class ManualIOMapper:
         # Fallback to generic output coordinates if none are defined
         print(f"Warning: No output mapping for '{self.env_name}'. Using a generic one.")
         output_coors = []
-        feature_dims = coord_size - 2
+        feature_dims = coord_size - 1
         for i in range(self.act_size):
             coord = tuple([0] * feature_dims + [i + 1] + [self.depth_factor])
             output_coors.append(coord)

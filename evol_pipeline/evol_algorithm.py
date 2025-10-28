@@ -22,7 +22,23 @@ def create_evol_algorithm(substrate, sampling = False):
         weight_init_std=algo_params["conn_gene"]["weight_init_std"],
     )
 
-    node_gene=DefaultNode(
+    bias_node_gene=BiasNode(
+        bias_init_mean=algo_params["node_gene"]["bias_init_mean"],
+        bias_init_std=algo_params["node_gene"]["bias_init_std"],
+        bias_mutate_power=algo_params["node_gene"]["bias_mutate_power"],
+        bias_mutate_rate=algo_params["node_gene"]["bias_mutate_rate"],
+        bias_replace_rate=algo_params["node_gene"]["bias_replace_rate"],
+        bias_lower_bound=algo_params["node_gene"]["bias_lower_bound"],
+        bias_upper_bound=algo_params["node_gene"]["bias_upper_bound"],
+        activation_options=algo_params["node_gene"]["activation_function_options"],
+        activation_default=algo_params["node_gene"]["activation_default"],
+        activation_replace_rate=algo_params["node_gene"]["activation_replace_rate"],
+        aggregation_options=algo_params["node_gene"]["aggregation_options"],
+        aggregation_default=algo_params["node_gene"]["aggregation_default"],
+        aggregation_replace_rate=algo_params["node_gene"]["aggregation_replace_rate"],
+    )
+
+    default_node_gene=DefaultNode(
         bias_init_mean=algo_params["node_gene"]["bias_init_mean"],
         bias_init_std=algo_params["node_gene"]["bias_init_std"],
         bias_mutate_power=algo_params["node_gene"]["bias_mutate_power"],
@@ -61,7 +77,7 @@ def create_evol_algorithm(substrate, sampling = False):
         max_conns=algo_params["genome"]["cppn_max_conns"],
         init_hidden_layers=algo_params["genome"]["cppn_init_hidden_layers"](query_dim),
         mutation=mutation,
-        node_gene=node_gene,
+        node_gene=default_node_gene,
         conn_gene=conn_gene,
     )
 

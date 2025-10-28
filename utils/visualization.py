@@ -25,7 +25,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
     best_genome = pipeline.best_genome
     print("Manually reconstructing the phenotype. A visual layout will be generated.")
 
-    # --- 1. Get Weights from CPPN ---
+    # 1. Get Weights from CPPN ---
     neat_algorithm = pipeline.algorithm.neat
     cppn_params = neat_algorithm.transform(state, best_genome)
     query_coors = substrate.query_coors
@@ -38,7 +38,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
     all_substrate_connections = np.array(substrate.conns)
     all_substrate_weights_np = np.array(all_substrate_weights).squeeze()
 
-    # --- 2. Filter Edges by Weight Threshold ---
+    # 2. Filter Edges by Weight Threshold ---
     internal_weight_threshold = pipeline.algorithm.weight_threshold
     active_mask = np.abs(all_substrate_weights_np) > internal_weight_threshold
     active_conns = all_substrate_connections[active_mask]
@@ -46,7 +46,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
 
     print(f"Substrate has {len(all_substrate_connections)} potential connections.")
 
-    # --- 3. Build Graph and Assign Layers (Simplified) ---
+    # 3. Build Graph and Assign Layers (Simplified) ---
     G_to_draw = nx.DiGraph()
     all_node_keys = [int(n[0]) for n in substrate.nodes]
 
@@ -84,7 +84,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
     # Generate the layout based on the 'subset' attribute
     pos = nx.multipartite_layout(G_to_draw, subset_key='subset')
 
-    # --- 4. Process and Filter Edges for Drawing ---
+    # 4. Process and Filter Edges for Drawing ---
     ac = np.asarray(active_conns)
     if ac.size == 0:
         edges_to_add = []
@@ -103,7 +103,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
     print(f"Visualizing {len(active_weights)} connections. Excluded loops. Weight threshold: {internal_weight_threshold}")
     G_to_draw.add_edges_from(edges_to_add)
 
-    # --- 5. Prepare for Drawing (Colors, Weights, etc.) ---
+    # 5. Prepare for Drawing (Colors, Weights, etc.) ---
     node_colors = []
     for node_key in G_to_draw.nodes():
         if node_key in input_keys: color = 'blue'
@@ -130,7 +130,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
     else:
         edges_pos, edges_neg, w_pos, w_neg_mag, widths_pos, widths_neg = [], [], [], [], [], []
 
-    # --- 6. Draw the Network ---
+    # 6. Draw the Network ---
     nx.draw_networkx_nodes(G_to_draw, pos=pos, node_color=node_colors, node_size=20, ax=ax)
 
     if len(edges_pos):

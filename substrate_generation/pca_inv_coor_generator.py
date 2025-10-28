@@ -8,14 +8,13 @@ class InvPCAanalyzer:
     """
     Handles inverse PCA analysis of environment data to determine substrate coordinates which express least variance.
     """
-    def __init__(self, data, obs_size, act_size, feature_dims, hidden_depth, seed=None, width_factor=1.0, normalize_coors=True, depth_factor=1):
+    def __init__(self, data, obs_size, act_size, feature_dims, seed=None, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
             raise ValueError(f"Data shape mismatch...")
         self.data = data
         self.obs_size = obs_size
         self.act_size = act_size
         self.feature_dims = feature_dims
-        self.output_depth = hidden_depth + 1
         self.seed = seed
         self.width_factor = width_factor
         self.depth_factor = depth_factor
@@ -140,7 +139,7 @@ class InvPCAanalyzer:
         xtick_labels = [f"PC {i+1}" for i in self.final_dims_indices]
         ax.set_xticklabels(xtick_labels)
         
-        ax.set_ylabel("Original Nodes (Sensors & Motors)", weight='bold')
+        ax.set_ylabel("Nodes (Sensors & Motors)", weight='bold')
         ax.set_yticks(np.arange(self.obs_size + self.act_size))
         
         ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')

@@ -25,19 +25,24 @@ class RandomCoordinateGenerator:
         binary_capacity = 2**num_feature_dims
         ternary_capacity = 3**num_feature_dims
         
-        if num_coords <= binary_capacity:
-            print(f"Using binary alphabet [0, 1] for {num_coords} coordinates.")
-            alphabet = [0., 1.]
-            generation_mode = 'discrete'
-        elif num_coords <= ternary_capacity:
-            print(f"Warning: Binary space (cap: {binary_capacity}) is too small for {num_coords} coords. "
-                  f"Expanding to ternary alphabet [0, 0.5, 1].")
-            alphabet = [0., 0.5, 1.]
-            generation_mode = 'discrete'
-        else:
-            print(f"Warning: Ternary space (cap: {ternary_capacity}) is also too small for {num_coords} coords. "
-                  f"Falling back to continuous random coordinates in [0, 1).")
-            generation_mode = 'continuous'
+        if False:
+            if num_coords <= binary_capacity:
+                print(f"Using binary alphabet [0, 1] for {num_coords} coordinates.")
+                alphabet = [0.0, 1.]
+                generation_mode = 'discrete'
+            elif num_coords <= ternary_capacity:
+                print(f"Warning: Binary space (cap: {binary_capacity}) is too small for {num_coords} coords. "
+                    f"Expanding to ternary alphabet [0, 0.5, 1].")
+                alphabet = [0.0, 0.5, 1.0]
+                generation_mode = 'discrete'
+            else:
+                print(f"Warning: Ternary space (cap: {ternary_capacity}) is also too small for {num_coords} coords. "
+                    f"Falling back to continuous random coordinates in [-1, 1).")
+                generation_mode = 'continuous'
+
+        # simply using generation_mode continuous for better comparability
+        generation_mode = 'continuous'
+        alphabet = [0.0, 0.5, 1.0]
 
         unique_coords = set()
         # Add a safety break to prevent rare infinite loops in continuous mode
@@ -49,10 +54,8 @@ class RandomCoordinateGenerator:
                 # Generate a random vector by choosing from the selected alphabet
                 random_vector = self.rng.choice(alphabet, size=num_feature_dims)
             else: # generation_mode == 'continuous'
-                # Generate a random vector from a uniform distribution
-                random_vector = self.rng.random(size=num_feature_dims)
-                # Round to a few decimal places to avoid floating point precision issues
-                random_vector = np.round(random_vector, 5)
+                # Generate a random vector in range [0.0,1.0), multiply by 2 and subtract 1 to get range -1 to 1; round to avoid floating point precision issues
+                random_vector = np.round(self.rng.random(size=num_feature_dims) * 2 - 1, 5)
 
             unique_coords.add(tuple(random_vector))
             attempts += 1

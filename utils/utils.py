@@ -1,6 +1,6 @@
 import os
 import csv
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 import numpy as np
 
 def save_coordinates_to_csv(
@@ -39,3 +39,36 @@ def setup_folder_structure(output_dir: str):
         os.mkdir(f"{output_dir}/video")
     if not os.path.exists(f"{output_dir}/topology"):
         os.mkdir(f"{output_dir}/topology")
+
+
+def save_data_sources(data_sources: Dict[str, np.ndarray], filepath: str):
+    try:
+        # The **data_sources syntax unpacks the dictionary into keyword arguments,
+        # which is exactly what np.savez_compressed expects.
+        # e.g., np.savez_compressed(filepath, trained=array1, random=array2)
+        np.savez_compressed(filepath, **data_sources)
+        print(f"Successfully saved data sources to: {filepath}")
+
+    except IOError as e:
+        print(f"Error: Could not write to file at {filepath}. Reason: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred while saving: {e}")
+
+
+def load_data_sources(filepath: str) -> Dict[str, np.ndarray]:
+    try:
+        # np.load returns an NpzFile object, which acts like a dictionary
+        loaded_data = np.load(filepath)
+        
+        # Reconstruct a standard Python dictionary from the NpzFile object
+        data_sources = {key: loaded_data[key] for key in loaded_data.files}
+        
+        print(f"Successfully loaded data sources from: {filepath}")
+        return data_sources
+
+    except FileNotFoundError:
+        print(f"Error: File not found at {filepath}. Returning an empty dictionary.")
+        return {}
+    except Exception as e:
+        print(f"An unexpected error occurred while loading: {e}")
+        return {}
