@@ -7,8 +7,17 @@ from tensorneat import Pipeline
 from tensorneat.algorithm.hyperneat import HyperNEATFeedForward, MLPSubstrate
 from tensorneat.common import ACT
 
+def normalize_data(data: jnp.ndarray) -> jnp.ndarray:
+    """
+    Normalizes data using Z-score standardization.
+    """
+    mean = jnp.mean(data, axis=0)
+    std = jnp.std(data, axis=0)
+    epsilon = 1e-8  # To prevent division by zero
+    normalized_data = (data - mean) / (std + epsilon)
+    return normalized_data
 
-def collect_random_policy_data(env_problem, key, num_steps) -> np.ndarray:
+def collect_random_policy_data(env_problem, key, num_steps, obs_diff_only = False, do_normalization = False) -> np.ndarray:
     """
     Collects data by running a random policy in the environment.
     """
@@ -23,13 +32,13 @@ def collect_random_policy_data(env_problem, key, num_steps) -> np.ndarray:
     # a zero-vector is used as initial action
     initial_action = jnp.zeros(env_problem.output_shape)
     
-    # the "carry" holds the action from the last step
-    initial_carry = (initial_env_state, initial_action)
+    # the "carry" holds the action and observations from the last step
+    initial_carry = (initial_env_state, initial_obs, initial_action)
     
     # defines the single-step function for the JAX loop
     def policy_step(carry, key):
         # unpacks the state from the previous iteration
-        env_state, last_action = carry
+        env_state, last_obs, last_action = carry
         
         # generate random action
         current_action = jax.random.uniform(
@@ -37,15 +46,20 @@ def collect_random_policy_data(env_problem, key, num_steps) -> np.ndarray:
         )
         
         # steps the environment using the current action
-        next_obs, next_env_state, _, _, _ = env_problem.env_step(
+        current_obs, next_env_state, _, _, _ = env_problem.env_step(
             jax.random.PRNGKey(0), env_state, current_action
         )
+
+        if obs_diff_only:
+            obs_value = current_obs - last_obs
+        else:
+            obs_value = current_obs
         
-        # The snapshot records the action from the previous step (last_action) and the observation that RESULTED from it (next_obs).
-        snapshot = jnp.concatenate([last_action, next_obs])
+        # The snapshot records the action from the previous step (last_action) and the observation that RESULTED from it (current_obs).
+        snapshot = jnp.concatenate([last_action, obs_value])
         
-        # The new carry for the next iteration must include the action we just took.
-        new_carry = (next_env_state, current_action)
+        # The new carry for the next iteration must include the action the agent just took and the observations made
+        new_carry = (next_env_state, current_obs, current_action)
 
         return new_carry, snapshot
 
@@ -54,17 +68,16 @@ def collect_random_policy_data(env_problem, key, num_steps) -> np.ndarray:
     step_keys = jax.random.split(key, num_steps) # takes the main simulation key and split it into num_steps unique sub-keys
     
     # final carry is irrelevant, collected data holds array of shape (num_steps, obs_size + act_size)
-    (_, _), collected_data = jax.lax.scan(jitted_policy_step, initial_carry, step_keys)
+    (_, _, _), collected_data = jax.lax.scan(jitted_policy_step, initial_carry, step_keys)
+
+    if do_normalization:
+        collected_data = normalize_data(collected_data)
 
     print("Causal data collection finished.")
     return jax.device_get(collected_data)
 
 
-def collect_trained_agent_policy_data(
-    env_problem,
-    key,
-    num_steps: int,
-) -> np.ndarray:
+def collect_trained_agent_policy_data(env_problem, key, num_steps, obs_diff_only = False, do_normalization = False) -> np.ndarray:
     """
     Fully encapsulates the process of training a temporary agent with
     a simple MLP substrate and then collects data by running it in the environment.
@@ -104,12 +117,12 @@ def collect_trained_agent_policy_data(
     init_state = pipeline.setup()
     trained_state, best_genome = pipeline.auto_run(state=init_state)
 
-    sampled_data = sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_problem, num_steps)
+    sampled_data = sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_problem, num_steps, obs_diff_only, do_normalization)
 
     return sampled_data
 
 
-def sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_problem, num_steps):
+def sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_problem, num_steps, obs_diff_only = False, do_normalization = False):
 
     # Collect data using the trained agent
     print(f"Collecting {num_steps} data points using the trained agent policy...")
@@ -135,15 +148,20 @@ def sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_
         current_action = act_func(trained_state, params, last_obs)
         
         # Take the step in the environment using the current action
-        next_obs, next_env_state, _, _, _ = env_problem.env_step(
+        current_obs, next_env_state, _, _, _ = env_problem.env_step(
             jax.random.PRNGKey(0), env_state, current_action
         )
+
+        if obs_diff_only:
+            obs_value = current_obs - last_obs
+        else:
+            obs_value = current_obs
         
-        # snapshot records action from the previous step (last_action) and observation that resulted from it (next_obs).
-        snapshot = jnp.concatenate([last_action, next_obs])
+        # snapshot records action from the previous step (last_action) and observation that resulted from it (current_obs).
+        snapshot = jnp.concatenate([last_action, obs_value])
         
         # defines the values to be carries over into the next loop
-        new_carry = (next_env_state, next_obs, current_action)
+        new_carry = (next_env_state, current_obs, current_action)
         
         return new_carry, snapshot
 
@@ -152,6 +170,10 @@ def sample_from_pretrained_agent(key, trained_state, best_genome, pipeline, env_
     
     # collected data is the only return value of interest
     (_, _, _), collected_data = jax.lax.scan(jitted_policy_step, initial_carry, None, length=num_steps)
-    
+
+    if do_normalization:
+        collected_data = normalize_data(collected_data)
+
     print("Causal expert data collection finished.\n")
     return jax.device_get(collected_data)
+

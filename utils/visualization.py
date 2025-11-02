@@ -185,7 +185,7 @@ def visualize_nn(pipeline, state, save_path, substrate, input_coors, hidden_coor
 
     out_path = f"{save_path}"
     fig.savefig(out_path, dpi=800)
-    plt.show()
+    # plt.show()
     plt.close(fig)
 
     print(f"Visualization saved to: {out_path}")

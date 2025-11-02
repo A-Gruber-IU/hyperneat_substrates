@@ -72,3 +72,15 @@ def load_data_sources(filepath: str) -> Dict[str, np.ndarray]:
     except Exception as e:
         print(f"An unexpected error occurred while loading: {e}")
         return {}
+
+FIELDNAMES = ["dimensionality", "sampling", "method", "max_fitness"]
+
+def append_summary_row(path: str, row: dict, fieldnames=FIELDNAMES) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    file_exists = os.path.isfile(path)
+    
+    with open(path, mode="a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)

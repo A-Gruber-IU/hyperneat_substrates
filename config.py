@@ -25,7 +25,9 @@ config = {
     "environment": {
         "backend": "mjx", # mjx | generalized | positional | spring --- mjx creates most physically plausible movements
         "max_step": 1000,
-        "repeat_times": 10, # 10|15 - stabilizes convergence, but impacts run time very significantly
+        "repeat_times": 8, # stabilizes convergence, but impacts run time very significantly
+        "obs_normalization": False,
+        "sample_episodes": 16, # related to obs_normalization
         "args_sets": {  # Specific reward/cost weights for each environment, use_contact_forces is not implemented
             "ant": {
                 "healthy_reward": 0.05, # 0.05 (default 1.0)
@@ -43,7 +45,7 @@ config = {
     },
     # DATA SAMPLING
     "data_sampling": {
-        "sampling_steps": 10000,
+        "sampling_steps": 1000,
         "num_agents_to_sample": 2,
         # Config for the temporary sampling agent
         "trained_agent_sampling": {
@@ -56,14 +58,14 @@ config = {
     # DATA ANALYSIS
     "data_analysis": {
         "variance_threshold": 1.0,
-        "feature_dims": [1,2,3,6,9,12,16],
-        "sdl_alpha": 1.0,
-        "sdl_max_iter": 2000,
+        "feature_dims": [1,2,5,9,14,19], # [1,2,5,9,14,19]
+        "dl_alpha": 0.5,
+        "dl_max_iter": 2000,
         "normalize_coors": True,
     },
     # EVOLUTION PIPELINE CONFIGURATION
     "pipeline": {
-        "generation_limit": 250,
+        "generation_limit": 200,
         "fitness_target": 10000.0,
     },
     # SUBSTRATE & HYPERNEAT CONFIGURATION
@@ -119,13 +121,13 @@ config = {
             "cppn_init_hidden_layers": lambda query_dim: initial_cppn_layers_flat(query_dim=query_dim),
         },
         "neat": {
-            "pop_size": 3500, # 3000
+            "pop_size": 3000, # 3500
             "genome_elitism": 2, # 3|5
             "species_elitism": 3, # 5
             "species_size": 20, # 25|35|50 
             "min_species_size": 10, # 5|10
             "survival_threshold": 0.025, # 0.05 | 0.1
-            "compatibility_threshold": 0.75, # 0.75 for initial_cppn_layers_dynamic | 1.0 initial_cppn_layers_flat | 1.5 initial_cppn_layers_none
+            "compatibility_threshold": 0.75, # 0.75
             "species_fitness_func": jnp.max, # jnp.max
             "species_number_calculate_by": "rank", # fitness | rank
             "max_stagnation": 15, # 15|20
