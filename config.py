@@ -19,7 +19,11 @@ config = {
     # TOP-LEVEL EXPERIMENT SETTINGS
     "experiment": {
         "env_name": "ant",
-        "seed": 42,
+        "seed": 1001,
+        "data_sources_path": "data_sources.npz",
+        "substrates_path": "substrates.pkl",
+        "output_dir_substrates": "output_substrates",
+        "output_dir_evolultion": "output_evolution",
     },
     # ENVIRONMENT CONFIGURATION
     "environment": {
@@ -49,7 +53,7 @@ config = {
         "num_agents_to_sample": 2,
         # Config for the temporary sampling agent
         "trained_agent_sampling": {
-            "generation_limit": 50,
+            "generation_limit": 100,
             "pop_size": 1000,
             "species_size": 10,
             "hidden_depth": 1,
@@ -65,7 +69,7 @@ config = {
     },
     # EVOLUTION PIPELINE CONFIGURATION
     "pipeline": {
-        "generation_limit": 200,
+        "generation_limit": 50,
         "fitness_target": 10000.0,
     },
     # SUBSTRATE & HYPERNEAT CONFIGURATION
@@ -121,10 +125,10 @@ config = {
             "cppn_init_hidden_layers": lambda query_dim: initial_cppn_layers_flat(query_dim=query_dim),
         },
         "neat": {
-            "pop_size": 3000, # 3500
+            "pop_size": 300, # 3500
             "genome_elitism": 2, # 3|5
             "species_elitism": 3, # 5
-            "species_size": 20, # 25|35|50 
+            "species_size": 10, # 20
             "min_species_size": 10, # 5|10
             "survival_threshold": 0.025, # 0.05 | 0.1
             "compatibility_threshold": 0.75, # 0.75

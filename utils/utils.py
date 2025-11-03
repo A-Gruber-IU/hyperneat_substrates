@@ -26,19 +26,22 @@ def save_coordinates_to_csv(
         print(f"An unexpected error occurred: {e}")
 
 
-def setup_folder_structure(output_dir: str):
-    if not os.path.exists(f"output"):
-        os.mkdir("output")
+def setup_folders_substrate(output_dir: str):
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
     if not os.path.exists(f"{output_dir}/data_analysis"):
         os.mkdir(f"{output_dir}/data_analysis")
     if not os.path.exists(f"{output_dir}/coordinates"):
         os.mkdir(f"{output_dir}/coordinates")
+
+def setup_folders_evolution(output_dir: str):
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
     if not os.path.exists(f"{output_dir}/video"):
         os.mkdir(f"{output_dir}/video")
     if not os.path.exists(f"{output_dir}/topology"):
         os.mkdir(f"{output_dir}/topology")
+
 
 
 def save_data_sources(data_sources: Dict[str, np.ndarray], filepath: str):
