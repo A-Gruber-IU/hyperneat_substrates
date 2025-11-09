@@ -41,6 +41,8 @@ def setup_folders_evolution(output_dir: str):
         os.mkdir(f"{output_dir}/video")
     if not os.path.exists(f"{output_dir}/topology"):
         os.mkdir(f"{output_dir}/topology")
+    if not os.path.exists(f"{output_dir}/eval"):
+        os.mkdir(f"{output_dir}/eval")
 
 
 

@@ -7,7 +7,6 @@ from substrate_generation.io_coor_processing import process_coordinates
 class FactorAnalyzer:
     """
     Handles Factor Analysis of environment data to determine substrate coordinates.
-    It serves as an alternative to the PCAanalyzer.
     """
     def __init__(self, data, obs_size, act_size, feature_dims, width_factor=1.0, normalize_coors=True, depth_factor=1):
         if data.shape[1] != obs_size + act_size:
@@ -59,8 +58,7 @@ class FactorAnalyzer:
 
     def plot_factor_loadings(self, save_path: str):
         """
-        Generates a heatmap of the factor loadings, which is more informative for FA
-        than a scree plot.
+        Generates a heatmap of the factor loadings.
         """
         if self.fa is None:
             raise RuntimeError("You must call `generate_io_coordinates()` before calling `plot_factor_loadings()`.")

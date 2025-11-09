@@ -23,7 +23,7 @@ config = {
         "data_sources_path": "data_sources.npz",
         "substrates_path": "substrates.pkl",
         "output_dir_substrates": "output_substrates",
-        "output_dir_evolultion": "output_evolution",
+        "output_dir_evolution": "output_evolution",
     },
     # ENVIRONMENT CONFIGURATION
     "environment": {
@@ -62,14 +62,14 @@ config = {
     # DATA ANALYSIS
     "data_analysis": {
         "variance_threshold": 1.0,
-        "feature_dims": [1,2,5,9,14,19], # [1,2,5,9,14,19]
+        "feature_dims": [1,2,5,9,14,19],
         "dl_alpha": 0.5,
         "dl_max_iter": 2000,
         "normalize_coors": True,
     },
     # EVOLUTION PIPELINE CONFIGURATION
     "pipeline": {
-        "generation_limit": 50,
+        "generation_limit": 500, # 400|500
         "fitness_target": 10000.0,
     },
     # SUBSTRATE & HYPERNEAT CONFIGURATION
@@ -113,10 +113,10 @@ config = {
             "response_mutate_rate": 0.2,
         },
         "mutation": {
-            "node_add_prob": 0.3, # 0.2 for initial_cppn_layers_dynamic, 0.3 | 0.4 for initial_cppn_layers_none | 0.3 initial_cppn_layers_flat
-            "conn_add_prob": 0.6, # 0.2 for initial_cppn_layers_dynamic, 0.4 | 0.6 for initial_cppn_layers_none | 0.6 initial_cppn_layers_flat
-            "node_delete_prob": 0.03, # 0.001-0.05 
-            "conn_delete_prob": 0.03, # 0.001-0.05
+            "node_add_prob": 0.3,
+            "conn_add_prob": 0.6,
+            "node_delete_prob": 0.03, 
+            "conn_delete_prob": 0.03,
         },
         "genome": {
             "cppn_output_activation": ACT.tanh, # ACT.tanh, ACT.scaled_tanh is scaled by a factor of 3
@@ -125,33 +125,28 @@ config = {
             "cppn_init_hidden_layers": lambda query_dim: initial_cppn_layers_flat(query_dim=query_dim),
         },
         "neat": {
-            "pop_size": 300, # 3500
-            "genome_elitism": 2, # 3|5
-            "species_elitism": 3, # 5
-            "species_size": 10, # 20
-            "min_species_size": 10, # 5|10
-            "survival_threshold": 0.025, # 0.05 | 0.1
-            "compatibility_threshold": 0.75, # 0.75
-            "species_fitness_func": jnp.max, # jnp.max
+            "pop_size": 500, # 300|500
+            "genome_elitism": 2,
+            "species_elitism": 3,
+            "species_size": 10,
+            "min_species_size": 10, 
+            "survival_threshold": 0.025,
+            "compatibility_threshold": 0.75,
+            "species_fitness_func": jnp.max,
             "species_number_calculate_by": "rank", # fitness | rank
-            "max_stagnation": 15, # 15|20
+            "max_stagnation": 15,
         },
         "hyperneat": {
             "activation_function": ACT.tanh,
             "output_activation": ACT.tanh,
-            "weight_threshold": 0.005, # 0.005 | 0.05
-            "max_weight": 1, # 1.5 | 2.5
-            "recurrent_activations": 5, # 5|10
+            "weight_threshold": 0.005,
+            "max_weight": 1,
+            "recurrent_activations": 5,
         },
     }
 }
 
-# dynamically set params
-
-# directory
-config['experiment']['output_dir'] = f"output/{config['experiment']['env_name']}"
-
-# Brax environment arguments
+# dynamically set params for Brax environment arguments
 env_name = config['experiment']['env_name']
 config['environment']['brax_args'] = config['environment']['args_sets'].get(env_name, {})
 

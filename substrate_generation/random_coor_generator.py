@@ -82,7 +82,8 @@ class RandomCoordinateGenerator:
         output_feature_coors = np.array(output_feature_coors_list, dtype=float)
 
         # Augment coordinates with the layering dimension
-        input_layer_dim = np.full((input_feature_coors.shape[0], 1), -self.depth_factor)
+        # input_layer_dim = np.full((input_feature_coors.shape[0], 1), -self.depth_factor) # normalizaton -1 to 1
+        input_layer_dim = np.zeros((input_feature_coors.shape[0], 1)) # normalization 0 to 1
         output_layer_dim = np.full((output_feature_coors.shape[0], 1), self.depth_factor)
         
         input_coors_full = np.hstack([input_feature_coors, input_layer_dim])
