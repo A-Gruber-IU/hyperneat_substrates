@@ -92,10 +92,9 @@ class DictionaryAnalyzer:
         ax.set_ylabel("Nodes (Sensors & Motors)", weight='bold')
         ax.set_yticks(np.arange(self.obs_size + self.act_size))
         
-        ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')
-        ax.text(self.feature_dims, self.obs_size / 2, 'Sensors', ha='center', va='center', rotation=-90, color='white', weight='bold')
-        ax.text(self.feature_dims, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center', rotation=-90, color='white', weight='bold')
-        
+        # Separator between sensors and motors
+        ax.axhline(y=self.act_size - 0.5, color='white', linewidth=2.5, linestyle='--')
+
         ax.set_title(f"Learned Dictionary Atoms ({self.feature_dims} Components)", fontsize=16, weight='bold')
         fig.tight_layout()
         

@@ -66,6 +66,8 @@ config = {
         "dl_alpha": 0.5,
         "dl_max_iter": 2000,
         "normalize_coors": True,
+        "isomap_neighbors": 10,
+        "isomap_distance": "correlation" # "correlation"|"cosine"|"euclidean",
     },
     # EVOLUTION PIPELINE CONFIGURATION
     "pipeline": {

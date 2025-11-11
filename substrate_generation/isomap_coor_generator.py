@@ -143,11 +143,7 @@ class IsomapIOEmbedder:
         ax.set_yticks(np.arange(n_features))
 
         # Separator between sensors and motors
-        ax.axhline(y=self.obs_size - 0.5, color='white', linewidth=2.5, linestyle='--')
-        ax.text(d, self.obs_size / 2, 'Sensors', ha='center', va='center',
-                rotation=-90, color='white', weight='bold')
-        ax.text(d, self.obs_size + self.act_size / 2, 'Motors', ha='center', va='center',
-                rotation=-90, color='white', weight='bold')
+        ax.axhline(y=self.act_size - 0.5, color='white', linewidth=2.5, linestyle='--')
 
         ax.set_title(f"Isomap Embedding Coordinates (d = {self.feature_dims})", fontsize=16, weight='bold')
         fig.tight_layout()
