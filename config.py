@@ -62,7 +62,7 @@ config = {
     # DATA ANALYSIS
     "data_analysis": {
         "variance_threshold": 1.0,
-        "feature_dims": [1,2,5,9,14,19],
+        "feature_dims": [1,2,5,9,14,19,24],
         "dl_alpha": 0.5,
         "dl_max_iter": 2000,
         "normalize_coors": True,
